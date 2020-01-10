@@ -112,7 +112,7 @@ sudo pip install -r ./requirements.txt && ansible --version
 看到以下内容则代表ansible安装成功
 
 ```
-ansible 2.7.12
+ansible 2.8.7
   config file = None
   configured module search path = [u'/home/easy/.ansible/plugins/modules', u'/usr/share/ansible/plugins/modules']
   ansible python module location = /usr/lib/python2.7/site-packages/ansible

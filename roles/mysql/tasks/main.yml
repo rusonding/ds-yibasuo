@@ -2,18 +2,6 @@
 
 # systemctl stop mysqld.service && rm -rf /usr/lib/systemd/system/mysqld.service && rm -rf /etc/init.d/mysql && rm -rf /home/easy/ds/mysql/
 
-# check env
-- name: mysql required packages install
-  yum:
-    name:
-      - net-tools
-      - bash-completion
-      - gcc
-      - unzip
-      - perl-Data-Dumper
-      - libaio-devel
-    state: latest
-
 # copy
 - name: mysql create related folders
   file: name={{ item }} state=directory mode=755 recurse=yes

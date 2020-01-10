@@ -8,6 +8,26 @@
     - name: mkdir
       file: name={{ deploy_dir }} state=directory mode=755
 
+- name: deploying db-pre
+  become: yes
+  become_method: sudo
+  gather_facts: false
+  any_errors_fatal: true
+  hosts: db_servers
+  tags:
+    - db-pre
+  - name: mysql required packages install
+    yum:
+      name:
+        - net-tools
+        - bash-completion
+        - gcc
+        - unzip
+        - perl-Data-Dumper
+        - libaio-devel
+      state: latest
+    async: 60
+
 - name: deploying db
   become: yes
   become_method: sudo
@@ -18,6 +38,30 @@
     - db
   roles:
     - mysql
+
+- name : deploying nginx-pre
+  become: yes
+  become_method: sudo
+  gather_facts: false
+  any_errors_fatal: true
+  hosts: nginx_servers
+  tags:
+    - nginx-pre
+  tasks:
+    - name: nginx required packages install
+      yum:
+        name:
+          - cmake
+          - openssl
+          - openssl-devel
+          - pcre
+          - pcre-devel
+          - zlib
+          - zlib-devel
+          - gd-devel
+          - libxml2-devel
+        state: latest
+      async: 60
 
 - name: deploying nginx
   become: yes
