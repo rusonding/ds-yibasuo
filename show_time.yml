@@ -1,6 +1,6 @@
 ---
 
-- name: main dir
+- name: deploy main directory
   gather_facts: false
   any_errors_fatal: true
   hosts: servers
@@ -8,7 +8,7 @@
     - name: mkdir
       file: name={{ deploy_dir }} state=directory mode=755
 
-- name: deploying db-pre
+- name: deploy db-pre
   become: yes
   become_method: sudo
   gather_facts: false
@@ -16,7 +16,7 @@
   hosts: db_servers
   tags:
     - db-pre
-  - name: mysql required packages install
+  - name: install packages required by mysql
     yum:
       name:
         - net-tools
@@ -28,7 +28,7 @@
       state: latest
     async: 60
 
-- name: deploying db
+- name: deploy db
   become: yes
   become_method: sudo
   gather_facts: false
@@ -39,7 +39,7 @@
   roles:
     - mysql
 
-- name : deploying nginx-pre
+- name : deploy nginx-pre
   become: yes
   become_method: sudo
   gather_facts: false
@@ -48,7 +48,7 @@
   tags:
     - nginx-pre
   tasks:
-    - name: nginx required packages install
+    - name: install packages required by nginx
       yum:
         name:
           - cmake
@@ -63,7 +63,7 @@
         state: latest
       async: 60
 
-- name: deploying nginx
+- name: deploy nginx
   become: yes
   become_method: sudo
   gather_facts: false
@@ -74,7 +74,7 @@
   roles:
     - nginx
 
-- name: deploying jdk
+- name: deploy jdk
   gather_facts: false
   any_errors_fatal: true
   hosts: servers
@@ -83,7 +83,7 @@
   roles:
     - jdk
 
-- name: deploying zookeeper
+- name: deploy zookeeper
   gather_facts: false
   any_errors_fatal: true
   hosts: servers
@@ -92,7 +92,7 @@
   roles:
     - zookeeper
 
-- name: deploying ds backend
+- name: deploy ds-backend
   gather_facts: false
   any_errors_fatal: true
   hosts: servers
@@ -101,7 +101,7 @@
   roles:
     - backend
 
-- name: initialization ds backend db
+- name: initialize ds-backend database
   gather_facts: false
   any_errors_fatal: true
   hosts: db_servers
@@ -110,14 +110,14 @@
   roles:
     - backend_db
 
-- name: deploying ds front
+- name: deploy ds-frontend
   become: yes
   become_method: sudo
   gather_facts: false
   any_errors_fatal: true
   hosts: nginx_servers
   tags:
-    - front
+    - frontend
   roles:
-    - front
+    - frontend
 
