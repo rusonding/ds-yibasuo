@@ -16,17 +16,18 @@
   hosts: db_servers
   tags:
     - db-pre
-  - name: install packages required by mysql
-    yum:
-      name:
-        - net-tools
-        - bash-completion
-        - gcc
-        - unzip
-        - perl-Data-Dumper
-        - libaio-devel
-      state: latest
-    async: 60
+  tasks:
+    - name: install packages required by mysql
+      yum:
+        name:
+          - net-tools
+          - bash-completion
+          - gcc
+          - unzip
+          - perl-Data-Dumper
+          - libaio-devel
+        state: latest
+      async: 60
 
 - name: deploy db
   become: yes
