@@ -1,7 +1,6 @@
 retry_files/
 downloads/
 fact_files/
-conf/keys
 scripts/dests.json
 
 .vagrant/
