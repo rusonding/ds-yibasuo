@@ -1,6 +1,6 @@
 # DolphinScheduler 一把梭！
 
-![](./doc/img/ds-yibasuo.jpg)
+![](./img/ds-yibasuo.jpg)
 
 ## 概述
 
@@ -247,11 +247,11 @@ ansible-playbook -i hosts.ini create_users.yml -u root -k
 此时，已经切换成单节点模式，我们开始hello world测试：
 
 
-<img src="./doc/img/demo1.png">
+<img src="img/demo1.png">
 <br/>
-<img src="./doc/img/demo2.png" width = "750" height = "120">
+<img src="img/demo2.png" width = "750" height = "120">
 <br/>
-<img src="./doc/img/demo3.png" width = "550" height = "350">
+<img src="img/demo3.png" width = "550" height = "350">
 
 
 
@@ -307,4 +307,4 @@ Slowly becomes, serving people.
                                               -- Lu Xun
 ```
 
-![](./doc/img/ops.jpeg)
+![](./img/ops.jpeg)

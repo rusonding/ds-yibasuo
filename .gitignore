@@ -1,7 +1,5 @@
-retry_files/
-downloads/
-fact_files/
-scripts/dests.json
+devops/retry_files/
+devops/downloads/
 
 .vagrant/
 *.retry
@@ -10,3 +8,4 @@ scripts/dests.json
 .DS_Store
 *.log
 .idea
+test/*

@@ -1,0 +1,159 @@
+---
+
+- name: invite the dancers
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  roles:
+    - dancer
+
+- name: check config static
+  hosts: localhost
+  gather_facts: false
+  roles:
+    - check_config_static
+
+- name: check config node
+  hosts: all
+  gather_facts: false
+  become: true
+  roles:
+    - pre-ansible
+#    - bootstrap
+
+- name: check system
+  become: yes
+  become_method: sudo
+  hosts: all
+  any_errors_fatal: true
+  roles:
+    - check_system_static
+
+- name: open the music
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  roles:
+    - music
+
+- name: deploy main directory
+  gather_facts: false
+  any_errors_fatal: true
+  hosts: servers
+  tasks:
+    - name: mkdir
+      file: name={{ deploy_dir }} state=directory mode=755
+
+- name: deploy db-pre
+  become: yes
+  become_method: sudo
+  gather_facts: false
+  any_errors_fatal: true
+  hosts: db_servers
+  tags:
+    - db-pre
+  tasks:
+    - name: install packages required by mysql
+      yum:
+        name:
+          - net-tools
+          - bash-completion
+          - gcc
+          - unzip
+          - perl-Data-Dumper
+          - libaio-devel
+        state: latest
+      async: 60
+
+- name: deploy db
+  become: yes
+  become_method: sudo
+  gather_facts: false
+  any_errors_fatal: true
+  hosts: db_servers
+  tags:
+    - db
+  roles:
+    - mysql
+
+- name : deploy nginx-pre
+  become: yes
+  become_method: sudo
+  gather_facts: false
+  any_errors_fatal: true
+  hosts: nginx_servers
+  tags:
+    - nginx-pre
+  tasks:
+    - name: install packages required by nginx
+      yum:
+        name:
+          - cmake
+          - openssl
+          - openssl-devel
+          - pcre
+          - pcre-devel
+          - zlib
+          - zlib-devel
+          - gd-devel
+          - libxml2-devel
+        state: latest
+      async: 60
+
+- name: deploy nginx
+  become: yes
+  become_method: sudo
+  gather_facts: false
+  any_errors_fatal: true
+  hosts: nginx_servers
+  tags:
+    - nginx
+  roles:
+    - nginx
+
+- name: deploy jdk
+  gather_facts: false
+  any_errors_fatal: true
+  hosts: servers
+  tags:
+    - jdk
+  roles:
+    - jdk
+
+- name: deploy zookeeper
+  gather_facts: false
+  any_errors_fatal: true
+  hosts: servers
+  tags:
+    - zookeeper
+  roles:
+    - zookeeper
+
+- name: deploy ds-backend
+  gather_facts: false
+  any_errors_fatal: true
+  hosts: servers
+  tags:
+    - backend
+  roles:
+    - backend
+
+- name: initialize ds-backend database
+  gather_facts: false
+  any_errors_fatal: true
+  hosts: db_servers
+  tags:
+    - backend_db
+  roles:
+    - backend_db
+
+- name: deploy ds-frontend
+  become: yes
+  become_method: sudo
+  gather_facts: false
+  any_errors_fatal: true
+  hosts: nginx_servers
+  tags:
+    - frontend
+  roles:
+    - frontend
