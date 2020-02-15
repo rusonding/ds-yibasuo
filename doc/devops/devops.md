@@ -1,7 +1,5 @@
 # DolphinScheduler 一把梭！
 
-[返回首页](../../)
-
 [返回目录](./README.md)
 
 ![](./../img/ds-yibasuo.jpg)
@@ -312,3 +310,6 @@ Slowly becomes, serving people.
 ```
 
 ![](./../img/ops.jpeg)
+
+
+[返回目录](./README.md)

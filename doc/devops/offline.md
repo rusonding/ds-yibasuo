@@ -1,7 +1,5 @@
 # 离线安装
 
-[返回首页](../../)
-
 [返回目录](./README.md)
 
 主要是把ds-yibasuo 和 安装需要的包先自己在有网络的地方下载好。让后把这些包拷贝到你需要安装的集群中即可。
@@ -57,3 +55,6 @@ repo1#maven#org/maven2/mysql/mysql-connector-java/5#1#48/mysql-connector-java-5#
 nginx
 
 nginx#org/download/nginx-1#10#3#tar#gz
+
+
+[返回目录](./README.md)

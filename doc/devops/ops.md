@@ -1,7 +1,5 @@
 # 常见运维操作
 
-[返回首页](../../)
-
 [返回目录](./README.md)
 
 ### 启动
@@ -59,3 +57,6 @@ ansible-playbook stop.yml -t front
 ```
 ansible-playbook stop.yml -t zookeeper
 ```
+
+
+[返回目录](./README.md)

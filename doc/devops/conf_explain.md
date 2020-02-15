@@ -1,7 +1,5 @@
 # 配置解释
 
-[返回首页](../../)
-
 [返回目录](./README.md)
 
 ## 概述
@@ -111,3 +109,6 @@ DolphinScheduler 所有配置的详细解释。在介绍前请大家先来理解
 | zookeeper.connection.timeout | 连接超时 |
 | zookeeper.retry.sleep | 重试间隔 |
 | zookeeper.retry.maxtime | 重试最大次数 |
+
+
+[返回目录](./README.md)
