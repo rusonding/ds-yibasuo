@@ -4,7 +4,7 @@
 - name: detect outbound network
   shell: >
     warn=no
-    curl -s --connect-timeout 10 www.baidu.com 2>/dev/null >/dev/null; echo $?
+    curl -s --connect-timeout 10 www.qq.com 2>/dev/null >/dev/null; echo $?
   changed_when: false
   register: outbound_network_st
 
@@ -12,7 +12,7 @@
   set_fact: has_outbound_network={{ outbound_network_st.stdout.strip() == '0' }}
 
 - fail:
-    msg: "The Control Machine must have access to the Internet in order to download TiDB and related packages."
+    msg: "Please check whether the network is normal."
   when: not has_outbound_network
 
 #- name: Stop if ansible version is too low, make sure that the Ansible version is Ansible 2.4.2 or later, otherwise a compatibility issue occurs.
@@ -44,6 +44,12 @@
 - include_vars: file={{ playbook_dir }}/conf/{{ deployment_method }}_packages.yml
 
 # download and unarchive
+- name: exists nginx
+  shell: "ls {{ pkg_dir }} | grep {{ item.name }}-{{ item.version }}.tar.gz"
+  register: nginx_pkg
+  ignore_errors: True
+  with_items: "{{ nginx_packages }}"
+
 - name: download nginx
   get_url:
     url: "{{ item.url }}"
@@ -51,12 +57,18 @@
     checksum: "{{ item.checksum | default(omit) }}"
     force: yes
     validate_certs: no
-  register: get_url_result
-  until: "'OK' in get_url_result.msg or 'file already exists' in get_url_result.msg"
   retries: 4
   delay: "{{ retry_stagger | random + 3 }}"
   with_items: "{{ nginx_packages }}"
-  when: has_outbound_network
+  when:
+    - has_outbound_network
+    - nginx_pkg | failed
+
+- name: exists jdk
+  shell: "ls {{ pkg_dir }} | grep {{ item.version }}.tar.gz"
+  register: jdk_pkg
+  ignore_errors: True
+  with_items: "{{ jdk_packages }}"
 
 - name: download jdk
   get_url:
@@ -65,12 +77,18 @@
     checksum: "{{ item.checksum | default(omit) }}"
     force: yes
     validate_certs: no
-  register: get_url_result
-  until: "'OK' in get_url_result.msg or 'file already exists' in get_url_result.msg"
   retries: 4
   delay: "{{ retry_stagger | random + 3 }}"
   with_items: "{{ jdk_packages }}"
-  when: has_outbound_network
+  when:
+    - has_outbound_network
+    - jdk_pkg | failed
+
+- name: exists zookeeper
+  shell: "ls {{ pkg_dir }} | grep {{ item.name }}-{{ item.version }}.tar.gz"
+  register: zookeeper_pkg
+  ignore_errors: True
+  with_items: "{{ zookeeper_packages }}"
 
 - name: download zookeeper
   get_url:
@@ -79,12 +97,18 @@
     checksum: "{{ item.checksum | default(omit) }}"
     force: yes
     validate_certs: no
-  register: get_url_result
-  until: "'OK' in get_url_result.msg or 'file already exists' in get_url_result.msg"
   retries: 4
   delay: "{{ retry_stagger | random + 3 }}"
   with_items: "{{ zookeeper_packages }}"
-  when: has_outbound_network
+  when:
+    - has_outbound_network
+    - zookeeper_pkg | failed
+
+- name: exists mysql
+  shell: "ls {{ pkg_dir }} | grep {{ item.name }}-{{ item.version }}.tar.gz"
+  register: mysql_pkg
+  ignore_errors: True
+  with_items: "{{ mysql_packages }}"
 
 - name: download mysql
   get_url:
@@ -93,32 +117,44 @@
     checksum: "{{ item.checksum | default(omit) }}"
     force: yes
     validate_certs: no
-  register: get_url_result
-  until: "'OK' in get_url_result.msg or 'file already exists' in get_url_result.msg"
   retries: 4
   delay: "{{ retry_stagger | random + 3 }}"
   with_items: "{{ mysql_packages }}"
-  when: has_outbound_network
+  when:
+    - has_outbound_network
+    - mysql_pkg | failed
 
 # dolphinscheduler
-- name: download dolphinscheduler front
+- name: exists frontend
+  shell: "ls {{ pkg_dir }} | grep {{ item.name }}-{{ item.version }}.tar.gz"
+  register: frontend_pkg
+  ignore_errors: True
+  with_items: "{{ dolphinscheduler_front_packages }}"
+
+- name: download dolphinscheduler frontend
   get_url:
     url: "{{ item.url }}"
     dest: "{{ pkg_dir }}/{{ item.name }}-{{ item.version }}.tar.gz"
     checksum: "{{ item.checksum | default(omit) }}"
     force: yes
     validate_certs: no
-  register: get_url_result
-  until: "'OK' in get_url_result.msg or 'file already exists' in get_url_result.msg"
   retries: 4
   delay: "{{ retry_stagger | random + 3 }}"
   with_items: "{{ dolphinscheduler_front_packages }}"
-  when: has_outbound_network
+  when:
+    - has_outbound_network
+    - frontend_pkg | failed
 
 #- name: unarchive dolphinscheduler front
 #  unarchive: >
 #    src="{{ downloads_dir }}/apache-dolphinscheduler-incubating-{{ dolphinscheduler_front_version }}.tar.gz"
 #    dest="{{ pkg_dir }}/" mode=0755
+
+- name: exists backend
+  shell: "ls {{ pkg_dir }} | grep {{ item.name }}-{{ item.version }}.tar.gz"
+  register: backend_pkg
+  ignore_errors: True
+  with_items: "{{ dolphinscheduler_backend_packages }}"
 
 - name: download dolphinscheduler backend
   get_url:
@@ -127,17 +163,23 @@
     checksum: "{{ item.checksum | default(omit) }}"
     force: yes
     validate_certs: no
-  register: get_url_result
-  until: "'OK' in get_url_result.msg or 'file already exists' in get_url_result.msg"
   retries: 4
   delay: "{{ retry_stagger | random + 3 }}"
   with_items: "{{ dolphinscheduler_backend_packages }}"
-  when: has_outbound_network
+  when:
+    - has_outbound_network
+    - backend_pkg | failed
 
 #- name: unarchive dolphinscheduler backend
 #  unarchive: >
 #    src="{{ downloads_dir }}/apache-dolphinscheduler-incubating-{{ dolphinscheduler_backend_version }}.tar.gz"
 #    dest="{{ pkg_dir }}/" mode=0755
+
+- name: exists mysql client
+  shell: "ls {{ pkg_dir }} | grep {{ item.name }}-{{ item.version }}.jar"
+  register: mysql_client_pkg
+  ignore_errors: True
+  with_items: "{{ mysql_client_jar }}"
 
 - name: download mysql client
   get_url:
@@ -146,12 +188,12 @@
     checksum: "{{ item.checksum | default(omit) }}"
     force: yes
     validate_certs: no
-  register: get_url_result
-  until: "'OK' in get_url_result.msg or 'file already exists' in get_url_result.msg"
   retries: 4
   delay: "{{ retry_stagger | random + 3 }}"
   with_items: "{{ mysql_client_jar }}"
-  when: has_outbound_network
+  when:
+    - has_outbound_network
+    - mysql_client_pkg | failed
 
 # clean
 #- name: clean up download dir
