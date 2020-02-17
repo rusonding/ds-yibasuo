@@ -20,14 +20,14 @@
     - name: ds backend stop
       shell: "{{ deploy_dir }}/backend/apache-dolphinscheduler-incubating-{{ dolphinscheduler_backend_version }}/script/stop-all.sh"
 
-- name: front
+- name: frontend
   become: yes
   become_method: sudo
   gather_facts: false
   any_errors_fatal: true
   hosts: nginx_servers
   tags:
-    - front
+    - frontend
   tasks:
     - name: nginx stop
       shell: "systemctl stop nginx.service"

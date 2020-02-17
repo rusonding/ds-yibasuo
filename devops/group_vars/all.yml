@@ -28,6 +28,7 @@ zookeeper_deploy_path: "{{ deploy_dir }}/zookeeper/zookeeper-{{ zookeeper_versio
 nginx_deploy_path: "{{ deploy_dir }}/nginx/deploy"
 nginx_vhost: "{{ deploy_dir }}/nginx/vhost"
 mysql_deploy_path: "{{ deploy_dir }}/mysql/mysql-{{ mysql_version }}"
+postgresql_deploy_path: "{{ deploy_dir }}/postgresql/postgresql-{{ mysql_version }}"
 jdk_deploy_path: "{{ deploy_dir }}/jdk/{{ jdk_version }}"
 ds_backend_deploy_path: "{{ deploy_dir }}/backend/apache-dolphinscheduler-incubating-{{ dolphinscheduler_backend_version }}"
 ds_front_deploy_path: "{{ nginx_vhost }}/dolphinscheduler/apache-dolphinscheduler-incubating-{{ dolphinscheduler_front_version }}"

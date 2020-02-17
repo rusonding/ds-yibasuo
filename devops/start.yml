@@ -23,14 +23,14 @@
     - name: ds backend start
       shell: "{{ deploy_dir }}/backend/apache-dolphinscheduler-incubating-{{ dolphinscheduler_backend_version }}/script/start-all.sh"
 
-- name: front
+- name: frontend
   become: yes
   become_method: sudo
   gather_facts: false
   any_errors_fatal: true
   hosts: nginx_servers
   tags:
-    - front
+    - frontend
   tasks:
     - name: nginx start
       shell: "systemctl restart nginx.service"

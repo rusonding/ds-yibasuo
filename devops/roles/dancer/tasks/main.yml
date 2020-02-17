@@ -145,7 +145,7 @@
     - has_outbound_network
     - frontend_pkg | failed
 
-#- name: unarchive dolphinscheduler front
+#- name: unarchive dolphinscheduler frontend
 #  unarchive: >
 #    src="{{ downloads_dir }}/apache-dolphinscheduler-incubating-{{ dolphinscheduler_front_version }}.tar.gz"
 #    dest="{{ pkg_dir }}/" mode=0755

@@ -1,0 +1,19 @@
+---
+
+- name: exists mysql
+  shell: "source ~/.bash_profile && source /etc/profile && mysql -V"
+  register: mysql_pkg
+
+- include_tasks: mysql.yml
+  when:
+    - db_type == 'mysql'
+    - '"command not found" in mysql_pkg.stdout'
+
+#- name: exists postgresql.yml
+#  shell: ""
+#  register: postgresql_pkg
+#
+#- include_tasks: postgresql.yml
+#  when:
+#    - db_type == 'postgresql'
+#    - '"command not found" in postgresql_pkg.stdout'

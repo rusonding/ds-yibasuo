@@ -1,15 +1,21 @@
 ---
 
+# dancer
 - name: invite the dancers
   hosts: localhost
   connection: local
   gather_facts: false
+  tags:
+    - dancer
   roles:
     - dancer
 
+# music
 - name: check config static
   hosts: localhost
   gather_facts: false
+  tags:
+    - music
   roles:
     - check_config_static
 
@@ -17,6 +23,8 @@
   hosts: all
   gather_facts: false
   become: true
+  tags:
+    - music
   roles:
     - pre-ansible
 #    - bootstrap
@@ -26,6 +34,8 @@
   become_method: sudo
   hosts: all
   any_errors_fatal: true
+  tags:
+    - music
   roles:
     - check_system_static
 
@@ -33,18 +43,23 @@
   hosts: localhost
   connection: local
   gather_facts: false
+  tags:
+    - music
   roles:
     - music
 
+# show_time
 - name: deploy main directory
   gather_facts: false
   any_errors_fatal: true
   hosts: servers
+  tags:
+    - show
   tasks:
     - name: mkdir
       file: name={{ deploy_dir }} state=directory mode=755
 
-- name: deploy db-pre
+- name: deploy database-pre
   become: yes
   become_method: sudo
   gather_facts: false
@@ -53,7 +68,7 @@
   tags:
     - db-pre
   tasks:
-    - name: install packages required by mysql
+    - name: install packages required by database
       yum:
         name:
           - net-tools
@@ -72,9 +87,9 @@
   any_errors_fatal: true
   hosts: db_servers
   tags:
-    - db
+    - database
   roles:
-    - mysql
+    - database
 
 - name : deploy nginx-pre
   become: yes
