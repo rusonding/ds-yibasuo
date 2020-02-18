@@ -9,9 +9,9 @@ type BaseInfo struct {
 
 // 角色信息
 type RoleInfo struct {
-	RoleName     string     `json:"name"`
-	RoleBody     ConfigBody `json:"roleBody"`
-	DependHostId int        `json:"dependHostId"`
+	RoleName   string     `json:"name"`
+	RoleBody   ConfigBody `json:"roleBody"`
+	DependHost string     `json:"dependHost"`
 }
 
 // 集群状态
@@ -27,7 +27,7 @@ type ClusterInfo struct {
 	Id     int         `json:"id"`     // 集群id
 	Name   string      `json:"name"`   // 集群名称
 	Status ClusterType `json:"status"` // 当前状态
-	Hosts  []int       `json:"hosts"`  // 主机信息
+	Hosts  []string    `json:"hosts"`  // 主机信息
 	Base   BaseInfo    `json:"base"`   // 基本信息
 	Roles  []RoleInfo  `json:"roles"`  // 角色信息
 }
