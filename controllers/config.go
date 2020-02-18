@@ -18,6 +18,6 @@ func (c *ConfigController) UpdateConfig() {
 
 }
 
-func (c *ConfigController) QueryConfigList() {
+func (c *ConfigController) SelectConfigList() {
 
 }
