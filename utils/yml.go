@@ -1,13 +1,12 @@
 package utils
 
 import (
-	. "ds-yibasuo/models"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
 )
 
 // 读yml配置文件，返回配置接口
-func ReadYml(path string, conf *ConfigBody) error {
+func ReadYml(path string, conf interface{}) error {
 	data, err := ioutil.ReadFile(path)
 	if err != nil {
 		return err

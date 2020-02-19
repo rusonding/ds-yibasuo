@@ -1,11 +1,18 @@
+# yibasuo related
+*.log
+test/*
+ds-yibasuo.exe
+
+# ansible related
 devops/retry_files/
 devops/downloads/
-
 .vagrant/
 *.retry
 *.pyc
+
+# ide related
 .vscode
-.DS_Store
-*.log
 .idea
-test/*
+
+# OS related
+.DS_Store
