@@ -1,5 +1,3 @@
----
-
 hadoop:
   fs.defaultFS: "file:///home/easy/ds/backend/dolphinscheduler_resource"
 

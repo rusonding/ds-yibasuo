@@ -3,27 +3,33 @@ package models
 import "fmt"
 
 // 配置内容接口
-type ConfigBody interface {
-	String()
-}
+type ConfigBody interface{ ConfigToString() string }
 
 // 前端配置
 type ConfigFrontend struct {
-	FrontendPort int `json:"frontendPort"`
+	Frontend Frontends `yaml:"nginx"`
 }
 
-func (m *ConfigFrontend) String() string {
-	return fmt.Sprintf(`"configFrontend":{"frontendPort":%d}`, m.FrontendPort)
+func (m *ConfigFrontend) ConfigToString() string { return "" }
+
+type Frontends struct {
+	EscProxyPort int `yaml:"esc_proxy_port"`
 }
+
+func (m *Frontends) ConfigToString() string { return "" }
 
 // 后端配置
 type ConfigBackend struct {
-	BackendPort int `json:"backendPort"` // server.port
+	Backend Backends `yaml:"api"`
 }
 
-func (m *ConfigBackend) string() string {
-	return fmt.Sprintf(`ConfigBackend:{}`)
+func (m *ConfigBackend) ConfigToString() string { return "" }
+
+type Backends struct {
+	ServerPort int `yaml:"server.port"`
 }
+
+func (m *Backends) ConfigToString() string { return "" }
 
 // 报警配置
 type AlertType int
@@ -33,19 +39,20 @@ const (
 	Weixin
 )
 
-type AlertBody interface{ String() string }
+type AlertBody interface{ AlertToString() string }
 
 type AlertMail struct {
+	// TODO 后面再写
 }
 
-func (m *AlertMail) String() string {
+func (m *AlertMail) AlertToString() string {
 	return fmt.Sprintf(`AlertMail:{}`)
 }
 
 type AlertWeixin struct {
 }
 
-func (m *AlertWeixin) String() string {
+func (m *AlertWeixin) AlertToString() string {
 	return fmt.Sprintf(`AlertWeixin:{}`)
 }
 
@@ -54,25 +61,51 @@ type ConfigAlert struct {
 	Alert     AlertBody `json:"alert"`
 }
 
+func (m *ConfigAlert) ConfigToString() string { return "" }
+
 // Master配置
 type ConfigMaster struct {
-	MasterMem float32 `json:"masterMem"`
+	Master Masters `yaml:"master"`
 }
 
-func (m *ConfigMaster) String() string {
-	return fmt.Sprintf(`ConfigMaster:{}`)
+func (m *ConfigMaster) ConfigToString() string { return fmt.Sprintf(`ConfigMaster:{}`) }
+
+type Masters struct {
+	MasterReservedMemory float32 `yaml:"master.reserved.memory"`
 }
+
+func (m *Masters) ConfigToString() string { return "" }
 
 // Worker配置
 type ConfigWorker struct {
-	WorkerMem float32 `json:"workerMem"`
+	Worker Workers `yaml:"worker"`
 }
 
-func (m *ConfigWorker) String() string {
-	return fmt.Sprintf(`ConfigWorker:{}`)
+func (m *ConfigWorker) ConfigToString() string { return fmt.Sprintf(`ConfigWorker:{}`) }
+
+type Workers struct {
+	WorkerReservedMemory float32 `yaml:"worker.reserved.memory"`
 }
 
-// db配置
+func (m *Workers) ConfigToString() string { return "" }
+
+// zookeeper配置
+type ConfigZookeeper struct {
+	Zookeeper Zookeepers `yaml:"zookeeper"`
+}
+
+func (m *ConfigZookeeper) ConfigToString() string { return "" }
+
+type Zookeepers struct {
+	ZookeeperQuorum string `yaml:"zookeeper.quorum"`
+}
+
+func (m *Zookeepers) ConfigToString() string { return "" }
+
+// 资源中心配置
+// TODO 后面再写
+
+// database配置
 type DatabaseType int
 
 const (
@@ -87,7 +120,7 @@ type ConfigDatabase struct {
 	Password     string       `json:"password"`
 }
 
-func (m *ConfigDatabase) String() string {
+func (m *ConfigDatabase) ConfigToString() string {
 	return fmt.Sprintf(`ConfigDB:{}`)
 }
 

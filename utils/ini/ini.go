@@ -1,6 +1,7 @@
-package utils
+package ini
 
 import (
+	"ds-yibasuo/utils"
 	"fmt"
 	"io/ioutil"
 	"regexp"
@@ -46,11 +47,11 @@ var (
 
 func init() {
 	if strings.Contains(strings.ToLower(runtime.GOOS), "windows") {
-		pathInventory = "..\\devops\\inventory.ini"
-		pathHosts = "..\\devops\\hosts.ini"
+		pathInventory = "..\\..\\devops\\inventory.ini"
+		pathHosts = "..\\..\\devops\\hosts.ini"
 	} else {
-		pathInventory = "./devops/inventory.ini"
-		pathHosts = "./devops/hosts.ini"
+		pathInventory = "./../devops/inventory.ini"
+		pathHosts = "./../devops/hosts.ini"
 	}
 }
 
@@ -78,7 +79,7 @@ func (i *IniInventory) ReadInventory() error {
 	if err != nil {
 		return err
 	}
-	dataStr := Byte2String(dataByte)
+	dataStr := utils.Byte2String(dataByte)
 
 	servers := regexp.MustCompile(SERVERS_REGEX).FindString(dataStr)
 	db := regexp.MustCompile(DB_REGEX).FindString(dataStr)
@@ -181,7 +182,7 @@ db_password = %s
 `, i.DolphinschedulerVersion, i.DeployDir, i.AnsibleUser,
 		i.DbType, i.DbName, i.DbUsername, i.DbPassword)
 
-	err := ioutil.WriteFile(pathInventory, String2Byte(data), 0755)
+	err := ioutil.WriteFile(pathInventory, utils.String2Byte(data), 0755)
 	if err != nil {
 		return err
 	}
@@ -199,7 +200,7 @@ func (i *IniHosts) ReadHosts() error {
 	if err != nil {
 		return err
 	}
-	dataStr := Byte2String(dataByte)
+	dataStr := utils.Byte2String(dataByte)
 
 	hosts := regexp.MustCompile(HOSTS_REGEX).FindString(dataStr)
 	user := regexp.MustCompile(HOSTS_USER_REGEX).FindString(dataStr)
@@ -221,7 +222,7 @@ func (i *IniHosts) WriteHosts() error {
 	data += "[all:vars]\n"
 	data += "username = " + i.AnsibleUser
 
-	err := ioutil.WriteFile(pathHosts, String2Byte(data), 0755)
+	err := ioutil.WriteFile(pathHosts, utils.String2Byte(data), 0755)
 	if err != nil {
 		return err
 	}
@@ -231,7 +232,7 @@ func (i *IniHosts) WriteHosts() error {
 // 解析ini 数组私有方法
 func parserList(in string) (out []string) {
 	unwantedRegex, _ := regexp.Compile(UNWANTED_REGEX)
-	filterHeadLast := Byte2String(unwantedRegex.ReplaceAll([]byte(in), []byte("")))
+	filterHeadLast := utils.Byte2String(unwantedRegex.ReplaceAll([]byte(in), []byte("")))
 	filterSpace := strings.TrimSpace(filterHeadLast)
 	split := strings.Split(filterSpace, "\n")
 	for _, value := range split {

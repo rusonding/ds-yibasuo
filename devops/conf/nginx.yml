@@ -1,6 +1,2 @@
----
-
 nginx:
   # esc_proxy_port: 8888
-
-  # esc_api_server: "http://127.0.0.1:12345"
