@@ -2,11 +2,13 @@ package models
 
 import (
 	"bufio"
+	"ds-yibasuo/utils"
 	"encoding/binary"
 	"fmt"
 	"io"
 	"os"
 	"os/exec"
+	"strconv"
 	"strings"
 )
 
@@ -26,7 +28,6 @@ func (m *DevopsInfo) BackupLog() {
 func (m *DevopsInfo) Deploy() {
 	cmd := exec.Command("ansible-playbook", "music.yml")
 	cmd.Dir = "./devops"
-
 	cmd.Start()
 }
 
@@ -86,4 +87,21 @@ type DevopsLogResult struct {
 	CurrentPage int
 	Rows        int
 	Data        []string
+}
+
+func (m *DevopsInfo) GetSignal() (bool, error) {
+	cmd := exec.Command("/bin/bash", "-c", "ps -ef | grep ansible-playbook | grep -v grep | wc -l")
+	bytes, err := cmd.Output()
+	if err != nil {
+		return false, err
+	}
+	ansibleCount, err := strconv.Atoi(strings.Replace(utils.Byte2String(bytes), "\n", "", -1))
+	if err != nil {
+		return false, err
+	}
+	if ansibleCount == 0 {
+		return true, nil
+	} else {
+		return false, nil
+	}
 }
