@@ -3,7 +3,6 @@ package models
 import (
 	"bufio"
 	"ds-yibasuo/utils"
-	"encoding/binary"
 	"fmt"
 	"io"
 	"os"
@@ -17,16 +16,27 @@ const (
 )
 
 type DevopsInfo struct {
-	ExecTime string
+	ExecuteType ExecuteType `json:"executeType"`
+	ClusterId   int         `json:"clusterId"`
+	ExecTime    string      `json:"execTime"`
 }
 
-func (m *DevopsInfo) BackupLog() {
-	cmd := exec.Command("mv", ANSIBLE_LOG, ANSIBLE_LOG+"."+m.ExecTime)
+func (m *DevopsInfo) BackupLog(executeType ExecuteType) {
+	mvCmd := ""
+	switch executeType {
+	case Start:
+		mvCmd = "start"
+	case Stop:
+		mvCmd = "stop"
+	case DeployUpdate:
+		mvCmd = "deployupdate"
+	}
+	cmd := exec.Command("/bin/bash", "-c", fmt.Sprintf("mv %s %s.%s.%s", ANSIBLE_LOG, ANSIBLE_LOG, mvCmd, m.ExecTime))
 	cmd.Start()
 }
 
-func (m *DevopsInfo) Deploy() {
-	cmd := exec.Command("ansible-playbook", "music.yml")
+func (m *DevopsInfo) DeployUpdate() {
+	cmd := exec.Command("ansible-playbook", "deploy.yml")
 	cmd.Dir = "./devops"
 	cmd.Start()
 }
@@ -80,7 +90,9 @@ func (m *DevopsInfo) GetLogRows() (int, error) {
 	if err != nil {
 		return 0, err
 	}
-	return int(binary.BigEndian.Uint16(out)), nil
+	//return int(binary.BigEndian.Uint16(out)), nil
+	fuckRows, _ := strconv.Atoi(strings.Replace(utils.Byte2String(out), "\n", "", -1))
+	return fuckRows, nil
 }
 
 type DevopsLogResult struct {
@@ -104,4 +116,16 @@ func (m *DevopsInfo) GetSignal() (bool, error) {
 	} else {
 		return false, nil
 	}
+}
+
+func (m *DevopsInfo) Start() {
+	cmd := exec.Command("ansible-playbook", "start.yml")
+	cmd.Dir = "./devops"
+	cmd.Start()
+}
+
+func (m *DevopsInfo) Stop() {
+	cmd := exec.Command("ansible-playbook", "stop.yml")
+	cmd.Dir = "./devops"
+	cmd.Start()
 }

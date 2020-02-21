@@ -78,7 +78,7 @@
           - perl-Data-Dumper
           - libaio-devel
         state: latest
-      async: 60
+      async: 90
 
 - name: deploy db
   become: yes
@@ -113,7 +113,7 @@
           - gd-devel
           - libxml2-devel
         state: latest
-      async: 60
+      async: 90
 
 - name: deploy nginx
   become: yes

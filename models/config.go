@@ -91,16 +91,10 @@ func (m *Workers) ConfigToString() string { return "" }
 
 // zookeeper配置
 type ConfigZookeeper struct {
-	Zookeeper Zookeepers `yaml:"zookeeper"`
+	Zookeeper []string `json:"zookeeper"`
 }
 
 func (m *ConfigZookeeper) ConfigToString() string { return "" }
-
-type Zookeepers struct {
-	ZookeeperQuorum string `yaml:"zookeeper.quorum"`
-}
-
-func (m *Zookeepers) ConfigToString() string { return "" }
 
 // 资源中心配置
 // TODO 后面再写

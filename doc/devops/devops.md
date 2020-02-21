@@ -60,8 +60,7 @@
 
 ```
 yum -y install epel-release git curl sshpass && \
-yum -y install python2-pip && \
-yum -y install git
+yum -y install python2-pip
 ```
 
 ## 在部署机上创建运维DolphinScheduler用户，并生成 ssh key

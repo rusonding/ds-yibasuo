@@ -1,2 +1,2 @@
 zookeeper:
-  # zookeeper.quorum: ""
+  zookeeper.quorum: "{{ groups['zookeeper_servers'] | mkstring_zk }}"

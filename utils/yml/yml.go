@@ -42,11 +42,6 @@ func ReadYml(path string, conf ConfigType) (ConfigBody, error) {
 		if err := yaml.Unmarshal(data, &config); err == nil {
 			return &config, nil
 		}
-	case Zookeeper:
-		config := ConfigZookeeper{}
-		if err := yaml.Unmarshal(data, &config); err == nil {
-			return &config, nil
-		}
 	case Resources: // TODO 后面再写
 	default:
 		return nil, errors.New("yaml unmarshal err or no fuck type.")
@@ -67,8 +62,6 @@ func WriteYml(path string, conf ConfigBody) error {
 	case *ConfigMaster:
 		data, _ = yaml.Marshal(&n)
 	case *ConfigWorker:
-		data, _ = yaml.Marshal(&n)
-	case *ConfigZookeeper:
 		data, _ = yaml.Marshal(&n)
 	default:
 		return errors.New("yaml marshal err or no fuck type.")

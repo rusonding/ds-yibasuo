@@ -13,6 +13,9 @@ func init() {
 	// 首页
 
 	// 集群管理
+	beego.Router("/api/v1/executeCluster", &controllers.ClusterController{}, "POST:ExecuteCluster")
+	beego.Router("/api/v1/readLog", &controllers.ClusterController{}, "get:ReadLog")
+	beego.Router("/api/v1/executeResultSignal", &controllers.ClusterController{}, "get:ExecuteResultSignal")
 
 	// 配置管理
 
@@ -21,9 +24,4 @@ func init() {
 	beego.Router("/api/v1/queryHostList", &controllers.HostController{}, "get:QueryHostList")
 
 	// 系统设置
-
-	// 部署
-	beego.Router("/api/v1/deploy", &controllers.DevopsController{}, "get:Deploy")
-	beego.Router("/api/v1/readLog", &controllers.DevopsController{}, "get:ReadLog")
-	beego.Router("/api/v1/executeResultSignal", &controllers.DevopsController{}, "get:ExecuteResultSignal")
 }
