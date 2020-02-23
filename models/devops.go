@@ -2,7 +2,7 @@ package models
 
 import (
 	"bufio"
-	"ds-yibasuo/utils"
+	. "ds-yibasuo/utils/black"
 	"fmt"
 	"io"
 	"os"
@@ -91,7 +91,7 @@ func (m *DevopsInfo) GetLogRows() (int, error) {
 		return 0, err
 	}
 	//return int(binary.BigEndian.Uint16(out)), nil
-	fuckRows, _ := strconv.Atoi(strings.Replace(utils.Byte2String(out), "\n", "", -1))
+	fuckRows, _ := strconv.Atoi(strings.Replace(Byte2String(out), "\n", "", -1))
 	return fuckRows, nil
 }
 
@@ -107,7 +107,7 @@ func (m *DevopsInfo) GetSignal() (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	ansibleCount, err := strconv.Atoi(strings.Replace(utils.Byte2String(bytes), "\n", "", -1))
+	ansibleCount, err := strconv.Atoi(strings.Replace(Byte2String(bytes), "\n", "", -1))
 	if err != nil {
 		return false, err
 	}

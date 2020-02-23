@@ -1,7 +1,7 @@
 package models
 
 import (
-	. "ds-yibasuo/utils"
+	. "ds-yibasuo/utils/blotdb"
 	"encoding/json"
 	"github.com/astaxie/beego/logs"
 )
@@ -15,7 +15,7 @@ type HostInfo struct {
 	Remark string `json:"remark"`
 }
 
-func (m *HostInfo) HostInsert() (uint64, error) {
+func (m *HostInfo) CreateHost() (uint64, error) {
 	hostBody, _ := json.Marshal(m)
 	id, err := Db.Add("host", hostBody)
 	if err != nil {
@@ -24,19 +24,19 @@ func (m *HostInfo) HostInsert() (uint64, error) {
 	return id, nil
 }
 
-func (m *HostInfo) HostDelete() {
+func (m *HostInfo) DeleteHost() {
 
 }
 
-func (m *HostInfo) HostUpdate() {
+func (m *HostInfo) UpdateHost() {
 
 }
 
-func (m *HostInfo) HostSelect() {
+func (m *HostInfo) SelectHost() {
 
 }
 
-func QueryHostList() (string, error) {
+func SelectHostList() (string, error) {
 	res, err := Db.SelectAll2Map("host")
 	if err != nil {
 		return "", err
@@ -47,4 +47,8 @@ func QueryHostList() (string, error) {
 		logs.Error(err)
 	}
 	return string(jsonRes), nil
+}
+
+func (m *HostInfo) DockingAnsible() {
+
 }

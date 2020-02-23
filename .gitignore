@@ -13,6 +13,7 @@ devops/downloads/
 # ide related
 .vscode
 .idea
+*.vswp
 
 # OS related
 .DS_Store

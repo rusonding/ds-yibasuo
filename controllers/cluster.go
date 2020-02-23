@@ -2,7 +2,8 @@ package controllers
 
 import (
 	. "ds-yibasuo/models"
-	"ds-yibasuo/utils"
+	. "ds-yibasuo/utils/black"
+	. "ds-yibasuo/utils/common"
 	"encoding/json"
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/logs"
@@ -30,8 +31,8 @@ func (c *ClusterController) SelectClusterList() {
 
 // 执行集群
 func (c *ClusterController) ExecuteCluster() {
-	now := utils.Now()
-	logs.Info("execute cluster, %s: \n", now, utils.Byte2String(c.Ctx.Input.RequestBody))
+	now := Now()
+	logs.Info("execute cluster, %s: \n", now, Byte2String(c.Ctx.Input.RequestBody))
 	var ansible DevopsInfo
 	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &ansible); err == nil {
 		ansible.ExecTime = now
@@ -64,8 +65,8 @@ func (c *ClusterController) ExecuteCluster() {
 
 // 查看上一次执行日志
 func (c *ClusterController) ReadLog() {
-	now := utils.Now()
-	logs.Info("read log, %s: \n", now, utils.Byte2String(c.Ctx.Input.RequestBody))
+	now := Now()
+	logs.Info("read log, %s: \n", now, Byte2String(c.Ctx.Input.RequestBody))
 	ansible := DevopsInfo{ExecTime: now}
 
 	// 分页读日志，一页10条
@@ -94,8 +95,8 @@ func (c *ClusterController) ReadLog() {
 
 // 执行结果信号
 func (c *ClusterController) ExecuteResultSignal() {
-	now := utils.Now()
-	logs.Info("get singal, %s: \n", now, utils.Byte2String(c.Ctx.Input.RequestBody))
+	now := Now()
+	logs.Info("get singal, %s: \n", now, Byte2String(c.Ctx.Input.RequestBody))
 	ansible := DevopsInfo{ExecTime: now}
 	singnal, err := ansible.GetSignal()
 	if err != nil {
