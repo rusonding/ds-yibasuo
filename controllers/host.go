@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"ds-yibasuo/models"
+	. "ds-yibasuo/utils/common"
 	"encoding/json"
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/logs"
@@ -13,11 +14,21 @@ type HostController struct {
 
 // 创建主机
 func (c *HostController) CreateHost() {
+	now := Now()
 	var req models.HostInfo
 
 	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &req); err == nil {
 		if _, err := req.CreateHost(); err == nil {
-			c.Data["json"] = models.Response{Code: 200, Message: "ok", Result: nil}
+			// ansible刷新主机
+			ansible := models.DevopsInfo{ExecTime: now}
+			ansible.BackupLog()
+			err = ansible.RefreshHost(req.Root)
+			if err != nil {
+				logs.Error("refresh host err: ", err)
+				c.Data["json"] = models.Response{Code: 500, Message: err.Error(), Result: nil}
+			} else {
+				c.Data["json"] = models.Response{Code: 200, Message: "ok", Result: nil}
+			}
 		} else {
 			logs.Info(err)
 		}

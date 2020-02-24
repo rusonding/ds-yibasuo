@@ -3,7 +3,9 @@ package models
 import (
 	"bufio"
 	. "ds-yibasuo/utils/black"
+	"errors"
 	"fmt"
+	"github.com/astaxie/beego/logs"
 	"io"
 	"os"
 	"os/exec"
@@ -21,17 +23,9 @@ type DevopsInfo struct {
 	ExecTime    string      `json:"execTime"`
 }
 
-func (m *DevopsInfo) BackupLog(executeType ExecuteType) {
-	mvCmd := ""
-	switch executeType {
-	case Start:
-		mvCmd = "start"
-	case Stop:
-		mvCmd = "stop"
-	case DeployUpdate:
-		mvCmd = "deployupdate"
-	}
-	cmd := exec.Command("/bin/bash", "-c", fmt.Sprintf("mv %s %s.%s.%s", ANSIBLE_LOG, ANSIBLE_LOG, mvCmd, m.ExecTime))
+func (m *DevopsInfo) BackupLog() {
+	logs.Info("ansible backup log ")
+	cmd := exec.Command("/bin/bash", "-c", fmt.Sprintf("mv %s %s.%s", ANSIBLE_LOG, ANSIBLE_LOG, m.ExecTime))
 	cmd.Start()
 }
 
@@ -128,4 +122,30 @@ func (m *DevopsInfo) Stop() {
 	cmd := exec.Command("ansible-playbook", "stop.yml")
 	cmd.Dir = "./devops"
 	cmd.Start()
+}
+
+func (m *DevopsInfo) RefreshHost(pwd string) error {
+	logs.Info("change password")
+	changePwd1 := fmt.Sprintf("sed -i 's/$pwd/%s/g' ./devops/hosts.ini", pwd)
+	changePwd2 := fmt.Sprintf("sed -i 's/%s/$pwd/g' ./devops/hosts.ini", pwd)
+	err := exec.Command("/bin/bash", "-c", changePwd1).Run()
+	if err != nil {
+		return err
+	}
+
+	logs.Info("ansible refresh host")
+	refresh := "ansible-playbook -i hosts.ini create_users.yml -u root"
+	cmd := exec.Command("/bin/bash", "-c", refresh)
+	cmd.Dir = "./devops"
+	out, err := cmd.Output()
+
+	exec.Command("/bin/bash", "-c", changePwd2).Run()
+
+	if strings.Contains(Byte2String(out), "Permission denied") {
+		return errors.New("当前版本仅支持所有服务器root密码一致！！")
+	}
+	if err != nil {
+		return err
+	}
+	return nil
 }

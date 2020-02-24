@@ -43,13 +43,13 @@ func (c *ClusterController) ExecuteCluster() {
 
 		switch ansible.ExecuteType {
 		case Start:
-			ansible.BackupLog(Start)
+			ansible.BackupLog()
 			ansible.Start()
 		case Stop:
-			ansible.BackupLog(Stop)
+			ansible.BackupLog()
 			ansible.Stop()
 		case DeployUpdate:
-			ansible.BackupLog(DeployUpdate)
+			ansible.BackupLog()
 			ansible.DeployUpdate()
 		default:
 			c.Data["json"] = Response{Code: 200, Message: "请输入正确的参数"}
