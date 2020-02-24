@@ -2,7 +2,6 @@ package blotdb
 
 import (
 	"bytes"
-	"fmt"
 	"github.com/boltdb/bolt"
 	"log"
 )
@@ -59,14 +58,31 @@ func (m *BoltManager) RemoveBucket(bucketName string) (err error) {
 }
 
 //组Bucket增加值
-func (m *BoltManager) Add(bucketName string, val []byte) (id uint64, err error) {
+//func (m *BoltManager) Add(bucketName string, val []byte) (err error) {
+//	err = m.db.Update(func(tx *bolt.Tx) error {
+//		b := tx.Bucket([]byte(bucketName))
+//		id, _ = b.NextSequence() //sequence uint64
+//		bBuf := fmt.Sprintf("%d", id)
+//		return b.Put([]byte(bBuf), val)
+//	})
+//	return
+//}
+
+func (m *BoltManager) Add(bucketName string, id, val []byte) (err error) {
 	err = m.db.Update(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte(bucketName))
-		id, _ = b.NextSequence() //sequence uint64
-		bBuf := fmt.Sprintf("%d", id)
-		return b.Put([]byte(bBuf), val)
+		return b.Put(id, val)
 	})
 	return
+}
+
+// 插入指定id来代替更新功能
+func (m *BoltManager) Update(bucketName string, id, val []byte) error {
+	err := m.db.Update(func(tx *bolt.Tx) error {
+		b := tx.Bucket([]byte(bucketName))
+		return b.Put(id, val)
+	})
+	return err
 }
 
 //遍历bucket 返回 map
@@ -93,6 +109,19 @@ func (m *BoltManager) SelectAll2List(bucketName string) (res []map[string]string
 			//log.Printf("key=%s, value=%s\n", string(k), v)
 			tmp[string(k)] = string(v)
 			res = append(res, tmp)
+			return nil
+		})
+		return nil
+	})
+	return res, nil
+}
+
+// 查询某个topic，且只返回value
+func (m *BoltManager) SelectValues(bucketName string) (res [][]byte, err error) {
+	_ = m.db.View(func(tx *bolt.Tx) error {
+		b := tx.Bucket([]byte(bucketName))
+		_ = b.ForEach(func(k, v []byte) error {
+			res = append(res, v)
 			return nil
 		})
 		return nil
@@ -152,11 +181,11 @@ func (m *BoltManager) RemoveVal(bucketName string, val []byte) (err error) {
 //  return arr, err
 //}
 
-func (m *BoltManager) SelectVal(bucketName string, val []byte) (arr []string, err error) {
+func (m *BoltManager) SelectVal(bucketName string, id []byte) (arr []string, err error) {
 	arr = make([]string, 0, 1)
 	err = m.db.View(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte(bucketName))
-		get := b.Get(val)
+		get := b.Get(id)
 		if string(get) != "" {
 			arr = append(arr, string(get))
 		}

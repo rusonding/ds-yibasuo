@@ -1,9 +1,9 @@
 package controllers
 
 import (
-	. "ds-yibasuo/models"
-	. "ds-yibasuo/utils/black"
-	. "ds-yibasuo/utils/common"
+	"ds-yibasuo/models"
+	"ds-yibasuo/utils/black"
+	"ds-yibasuo/utils/common"
 	"encoding/json"
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/logs"
@@ -31,43 +31,43 @@ func (c *ClusterController) SelectClusterList() {
 
 // 执行集群
 func (c *ClusterController) ExecuteCluster() {
-	now := Now()
-	logs.Info("execute cluster, %s: \n", now, Byte2String(c.Ctx.Input.RequestBody))
-	var ansible DevopsInfo
+	now := common.Now()
+	logs.Info("execute cluster, %s: \n", now, black.Byte2String(c.Ctx.Input.RequestBody))
+	var ansible models.DevopsInfo
 	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &ansible); err == nil {
 		ansible.ExecTime = now
 		if singnal, err := ansible.GetSignal(); singnal == false && err == nil {
-			c.Data["json"] = Response{Code: 500, Message: "上一次执行未结束，请等待"}
+			c.Data["json"] = models.Response{Code: 500, Message: "上一次执行未结束，请等待"}
 			return
 		}
 
 		switch ansible.ExecuteType {
-		case Start:
+		case models.Start:
 			ansible.BackupLog()
 			ansible.Start()
-		case Stop:
+		case models.Stop:
 			ansible.BackupLog()
 			ansible.Stop()
-		case DeployUpdate:
+		case models.DeployUpdate:
 			ansible.BackupLog()
 			ansible.DeployUpdate()
 		default:
-			c.Data["json"] = Response{Code: 200, Message: "请输入正确的参数"}
+			c.Data["json"] = models.Response{Code: 200, Message: "请输入正确的参数"}
 			return
 		}
 	} else {
-		c.Data["json"] = Response{Code: 200, Message: "请输入正确的参数"}
+		c.Data["json"] = models.Response{Code: 200, Message: "请输入正确的参数"}
 	}
 
-	c.Data["json"] = Response{Code: 200, Message: "ok", Result: nil}
+	c.Data["json"] = models.Response{Code: 200, Message: "ok", Result: nil}
 	c.ServeJSON()
 }
 
 // 查看上一次执行日志
 func (c *ClusterController) ReadLog() {
-	now := Now()
-	logs.Info("read log, %s: \n", now, Byte2String(c.Ctx.Input.RequestBody))
-	ansible := DevopsInfo{ExecTime: now}
+	now := common.Now()
+	logs.Info("read log, %s: \n", now, black.Byte2String(c.Ctx.Input.RequestBody))
+	ansible := models.DevopsInfo{ExecTime: now}
 
 	// 分页读日志，一页10条
 	page, _ := strconv.Atoi(c.Input().Get("page"))
@@ -83,25 +83,25 @@ func (c *ClusterController) ReadLog() {
 	}
 
 	// 组装响应
-	res := DevopsLogResult{
+	res := models.DevopsLogResult{
 		CurrentPage: page,
 		Rows:        rows,
 		Data:        log,
 	}
 
-	c.Data["json"] = Response{Code: 200, Message: "ok", Result: res}
+	c.Data["json"] = models.Response{Code: 200, Message: "ok", Result: res}
 	c.ServeJSON()
 }
 
 // 执行结果信号
 func (c *ClusterController) ExecuteResultSignal() {
-	now := Now()
-	logs.Info("get singal, %s: \n", now, Byte2String(c.Ctx.Input.RequestBody))
-	ansible := DevopsInfo{ExecTime: now}
+	now := common.Now()
+	logs.Info("get singal, %s: \n", now, black.Byte2String(c.Ctx.Input.RequestBody))
+	ansible := models.DevopsInfo{ExecTime: now}
 	singnal, err := ansible.GetSignal()
 	if err != nil {
 		logs.Error(err)
 	}
-	c.Data["json"] = Response{Code: 200, Message: "ok", Result: singnal}
+	c.Data["json"] = models.Response{Code: 200, Message: "ok", Result: singnal}
 	c.ServeJSON()
 }

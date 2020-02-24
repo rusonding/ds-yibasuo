@@ -1,7 +1,7 @@
 package ini
 
 import (
-	. "ds-yibasuo/utils/black"
+	"ds-yibasuo/utils/black"
 	"fmt"
 	"io/ioutil"
 	"regexp"
@@ -35,6 +35,7 @@ const (
 
 	HOSTS_REGEX      = "(?m)^\\[servers\\]([\\s\\S]+)^\\[all:vars\\]"
 	HOSTS_USER_REGEX = "username.*"
+	HOSTS_SSH_PASS   = "ansible_ssh_pass.*"
 
 	UNWANTED_REGEX = "(?m)\\[.*\\]"
 	IP_REGEX       = "(?m)\\d{0,3}\\.\\d{0,3}\\.\\d{0,3}\\.\\d{0,3}"
@@ -50,8 +51,8 @@ func init() {
 		pathInventory = "..\\..\\devops\\inventory.ini"
 		pathHosts = "..\\..\\devops\\hosts.ini"
 	} else {
-		pathInventory = "./../devops/inventory.ini"
-		pathHosts = "./../devops/hosts.ini"
+		pathInventory = "./devops/inventory.ini"
+		pathHosts = "./devops/hosts.ini"
 	}
 }
 
@@ -79,7 +80,7 @@ func (i *IniInventory) ReadInventory() error {
 	if err != nil {
 		return err
 	}
-	dataStr := Byte2String(dataByte)
+	dataStr := black.Byte2String(dataByte)
 
 	servers := regexp.MustCompile(SERVERS_REGEX).FindString(dataStr)
 	db := regexp.MustCompile(DB_REGEX).FindString(dataStr)
@@ -182,7 +183,7 @@ db_password = %s
 `, i.DolphinschedulerVersion, i.DeployDir, i.AnsibleUser,
 		i.DbType, i.DbName, i.DbUsername, i.DbPassword)
 
-	err := ioutil.WriteFile(pathInventory, String2Byte(data), 0755)
+	err := ioutil.WriteFile(pathInventory, black.String2Byte(data), 0755)
 	if err != nil {
 		return err
 	}
@@ -190,23 +191,26 @@ db_password = %s
 }
 
 type IniHosts struct {
-	Servers     []string
-	AnsibleUser string
+	Servers        []string
+	AnsibleUser    string
+	AnsibleSshPass string
 }
 
 // 读hosts ini配置文件
 func (i *IniHosts) ReadHosts() error {
-	dataByte, err := ioutil.ReadFile(pathInventory)
+	dataByte, err := ioutil.ReadFile(pathHosts)
 	if err != nil {
 		return err
 	}
-	dataStr := Byte2String(dataByte)
+	dataStr := black.Byte2String(dataByte)
 
 	hosts := regexp.MustCompile(HOSTS_REGEX).FindString(dataStr)
 	user := regexp.MustCompile(HOSTS_USER_REGEX).FindString(dataStr)
+	ssh := regexp.MustCompile(HOSTS_SSH_PASS).FindString(dataStr)
 
 	i.Servers = parserList(hosts)
 	i.AnsibleUser = parserString(user)
+	i.AnsibleSshPass = parserString(ssh)
 
 	return nil
 }
@@ -220,9 +224,10 @@ func (i *IniHosts) WriteHosts() error {
 	}
 	data += "\n"
 	data += "[all:vars]\n"
-	data += "username = " + i.AnsibleUser
+	data += "username = " + i.AnsibleUser + "\n"
+	data += "ansible_ssh_pass = " + i.AnsibleSshPass + "\n"
 
-	err := ioutil.WriteFile(pathHosts, String2Byte(data), 0755)
+	err := ioutil.WriteFile(pathHosts, black.String2Byte(data), 0755)
 	if err != nil {
 		return err
 	}
@@ -232,7 +237,7 @@ func (i *IniHosts) WriteHosts() error {
 // 解析ini 数组私有方法
 func parserList(in string) (out []string) {
 	unwantedRegex, _ := regexp.Compile(UNWANTED_REGEX)
-	filterHeadLast := Byte2String(unwantedRegex.ReplaceAll([]byte(in), []byte("")))
+	filterHeadLast := black.Byte2String(unwantedRegex.ReplaceAll([]byte(in), []byte("")))
 	filterSpace := strings.TrimSpace(filterHeadLast)
 	split := strings.Split(filterSpace, "\n")
 	for _, value := range split {

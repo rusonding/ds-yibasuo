@@ -1,7 +1,7 @@
 package yml
 
 import (
-	. "ds-yibasuo/models"
+	"ds-yibasuo/models"
 	"github.com/pkg/errors"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
@@ -11,38 +11,38 @@ import (
 // 后面再想办法迭代
 
 // 读yml配置文件，返回配置接口
-func ReadYml(path string, conf ConfigType) (ConfigBody, error) {
+func ReadYml(path string, conf models.ConfigType) (models.ConfigBody, error) {
 	data, err := ioutil.ReadFile(path)
 	if err != nil {
 		return nil, err
 	}
 	switch conf {
-	case Frontend:
-		config := ConfigFrontend{}
+	case models.Frontend:
+		config := models.ConfigFrontend{}
 		if err := yaml.Unmarshal(data, &config); err == nil {
 			return &config, nil
 		}
-	case Backend:
-		config := ConfigBackend{}
+	case models.Backend:
+		config := models.ConfigBackend{}
 		if err := yaml.Unmarshal(data, &config); err == nil {
 			return &config, nil
 		}
-	case Alert:
-		config := ConfigAlert{}
+	case models.Alert:
+		config := models.ConfigAlert{}
 		if err := yaml.Unmarshal(data, &config); err == nil {
 			return &config, nil
 		}
-	case Master:
-		config := ConfigMaster{}
+	case models.Master:
+		config := models.ConfigMaster{}
 		if err := yaml.Unmarshal(data, &config); err == nil {
 			return &config, nil
 		}
-	case Worker:
-		config := ConfigWorker{}
+	case models.Worker:
+		config := models.ConfigWorker{}
 		if err := yaml.Unmarshal(data, &config); err == nil {
 			return &config, nil
 		}
-	case Resources: // TODO 后面再写
+	case models.Resources: // TODO 后面再写
 	default:
 		return nil, errors.New("yaml unmarshal err or no fuck type.")
 	}
@@ -50,18 +50,18 @@ func ReadYml(path string, conf ConfigType) (ConfigBody, error) {
 }
 
 // 写yml配置文件
-func WriteYml(path string, conf ConfigBody) error {
+func WriteYml(path string, conf models.ConfigBody) error {
 	var data []byte
 	switch n := conf.(type) {
-	case *ConfigFrontend:
+	case *models.ConfigFrontend:
 		data, _ = yaml.Marshal(&n)
-	case *ConfigBackend:
+	case *models.ConfigBackend:
 		data, _ = yaml.Marshal(&n)
-	case *ConfigAlert:
+	case *models.ConfigAlert:
 		data, _ = yaml.Marshal(&n)
-	case *ConfigMaster:
+	case *models.ConfigMaster:
 		data, _ = yaml.Marshal(&n)
-	case *ConfigWorker:
+	case *models.ConfigWorker:
 		data, _ = yaml.Marshal(&n)
 	default:
 		return errors.New("yaml marshal err or no fuck type.")

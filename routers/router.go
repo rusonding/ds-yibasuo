@@ -21,6 +21,9 @@ func init() {
 
 	// 主机管理
 	beego.Router("/api/v1/createHost", &controllers.HostController{}, "post:CreateHost")
+	beego.Router("/api/v1/deleteHost", &controllers.HostController{}, "post:DeleteHost")
+	beego.Router("/api/v1/updateHost", &controllers.HostController{}, "post:UpdateHost")
+	beego.Router("/api/v1/selectHost", &controllers.HostController{}, "post:SelectHost")
 	beego.Router("/api/v1/selectHostList", &controllers.HostController{}, "get:SelectHostList")
 
 	// 系统设置

@@ -2,7 +2,7 @@ package models
 
 import (
 	"bufio"
-	. "ds-yibasuo/utils/black"
+	"ds-yibasuo/utils/black"
 	"errors"
 	"fmt"
 	"github.com/astaxie/beego/logs"
@@ -85,14 +85,14 @@ func (m *DevopsInfo) GetLogRows() (int, error) {
 		return 0, err
 	}
 	//return int(binary.BigEndian.Uint16(out)), nil
-	fuckRows, _ := strconv.Atoi(strings.Replace(Byte2String(out), "\n", "", -1))
+	fuckRows, _ := strconv.Atoi(strings.Replace(black.Byte2String(out), "\n", "", -1))
 	return fuckRows, nil
 }
 
 type DevopsLogResult struct {
-	CurrentPage int
-	Rows        int
-	Data        []string
+	CurrentPage int      `json:"currentPage"`
+	Rows        int      `json:"rows"`
+	Data        []string `json:"data"`
 }
 
 func (m *DevopsInfo) GetSignal() (bool, error) {
@@ -101,7 +101,7 @@ func (m *DevopsInfo) GetSignal() (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	ansibleCount, err := strconv.Atoi(strings.Replace(Byte2String(bytes), "\n", "", -1))
+	ansibleCount, err := strconv.Atoi(strings.Replace(black.Byte2String(bytes), "\n", "", -1))
 	if err != nil {
 		return false, err
 	}
@@ -125,23 +125,12 @@ func (m *DevopsInfo) Stop() {
 }
 
 func (m *DevopsInfo) RefreshHost(pwd string) error {
-	logs.Info("change password")
-	changePwd1 := fmt.Sprintf("sed -i 's/$pwd/%s/g' ./devops/hosts.ini", pwd)
-	changePwd2 := fmt.Sprintf("sed -i 's/%s/$pwd/g' ./devops/hosts.ini", pwd)
-	err := exec.Command("/bin/bash", "-c", changePwd1).Run()
-	if err != nil {
-		return err
-	}
-
 	logs.Info("ansible refresh host")
 	refresh := "ansible-playbook -i hosts.ini create_users.yml -u root"
 	cmd := exec.Command("/bin/bash", "-c", refresh)
 	cmd.Dir = "./devops"
 	out, err := cmd.Output()
-
-	exec.Command("/bin/bash", "-c", changePwd2).Run()
-
-	if strings.Contains(Byte2String(out), "Permission denied") {
+	if strings.Contains(black.Byte2String(out), "Permission denied") {
 		return errors.New("当前版本仅支持所有服务器root密码一致！！")
 	}
 	if err != nil {
