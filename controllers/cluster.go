@@ -4,10 +4,12 @@ import (
 	"ds-yibasuo/models"
 	"ds-yibasuo/utils/black"
 	"ds-yibasuo/utils/common"
+	"ds-yibasuo/utils/ini"
 	"encoding/json"
 	"fmt"
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/logs"
+	"github.com/mitchellh/mapstructure"
 	"strconv"
 )
 
@@ -17,6 +19,7 @@ type ClusterController struct {
 
 // controller层
 // 创建 或 修改集群
+// 集群一创建了，只有名字不能更改，其他的可以更改
 func (c *ClusterController) CreateUpdateCluster() {
 	logs.Info("controller create update cluster")
 	var req models.ClusterInfo
@@ -30,18 +33,12 @@ func (c *ClusterController) CreateUpdateCluster() {
 				return
 			}
 		}
-		if req.Base.DeployPath == "" || req.Base.DeployUser == "" || req.Base.Version == "" {
+		if req.Base.DeployDir == "" || req.Base.DeployUser == "" || req.Base.Version == "" {
 			c.Data["json"] = models.Response{Code: 500, Message: "基础信息错误", Result: nil}
 			c.ServeJSON()
 			return
 		}
-		for _, value := range req.Roles {
-			if value.DependHost == "" || value.RoleName == "" {
-				c.Data["json"] = models.Response{Code: 500, Message: "角色信息错误", Result: nil}
-				c.ServeJSON()
-				return
-			}
-		}
+		// TODO 集群信息请求体的基本验证
 		// 开始创建或修改
 		if err := req.CreateUpdateCluster(); err != nil {
 			c.Data["json"] = models.Response{Code: 500, Message: err.Error(), Result: nil}
@@ -125,26 +122,71 @@ func (c *ClusterController) SelectClusterList() {
 func (c *ClusterController) ExecuteCluster() {
 	now := common.Now()
 	logs.Info("execute cluster, %s: \n", now, black.Byte2String(c.Ctx.Input.RequestBody))
-	var ansible models.DevopsInfo
-	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &ansible); err == nil {
-		ansible.ExecTime = now
-		if singnal, err := ansible.GetSignal(); singnal == false && err == nil {
-			c.Data["json"] = models.Response{Code: 500, Message: "上一次执行未结束，请等待"}
-			return
+	var dev models.DevopsInfo
+	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &dev); err == nil {
+		dev.ExecTime = now
+		if singnal, err := dev.GetSignal(); err == nil { //TODO 隐患
+			if singnal.Over == false {
+				c.Data["json"] = models.Response{Code: 500, Message: "上一次执行未结束，请等待！！！"}
+				c.ServeJSON()
+				return
+			}
 		}
-
-		switch ansible.ExecuteType {
+		switch dev.ExecuteType {
 		case models.Start:
-			ansible.BackupLog()
-			ansible.Start()
+			dev.BackupLog(models.Start)
+			dev.Start()
 		case models.Stop:
-			ansible.BackupLog()
-			ansible.Stop()
+			dev.BackupLog(models.Stop)
+			dev.Stop()
 		case models.DeployUpdate:
-			ansible.BackupLog()
-			// TODO 只能允许集群中某一个集群工作，不能同时有两个，启动前需要判断
-			// TODO 将当前集群的状态设置为启动，并将当前集群的信息写入到ini配置文件中
-			ansible.DeployUpdate()
+			dev.BackupLog(models.DeployUpdate)
+			// 读取集群信息
+			cluster := models.ClusterInfo{}
+			cluster.Id = dev.ClusterId
+			clusterInfo, err := cluster.SelectCluster()
+			if err != nil {
+				logs.Error(err)
+				c.Data["json"] = models.Response{Code: 500, Message: "查询主机出错", Result: nil}
+				c.ServeJSON()
+				return
+			}
+			// 写入ini配置信息
+			i := ini.IniInventory{}
+			i.Servers = clusterInfo.Hosts
+			for _, role := range clusterInfo.Roles {
+				switch role.RoleName {
+				case "database":
+					var db models.ConfigDatabase
+					if err := mapstructure.Decode(role.RoleBody.(map[string]interface{}), &db); err != nil {
+						logs.Error("db map to struct err: ", err)
+					}
+					i.DbServers = role.RoleDependHost
+					i.DbType = db.DatabaseType
+					i.DbName = db.DatabaseName
+					i.DbUsername = db.Account
+					i.DbPassword = db.Password
+				case "zookeeper":
+					i.ZookeeperServers = role.RoleDependHost
+				case "master":
+					i.MasterServers = role.RoleDependHost
+				case "worker":
+					i.WorkerServers = role.RoleDependHost
+				case "backend":
+					i.ApiServers = role.RoleDependHost
+					i.AlertServers = role.RoleDependHost
+				case "frontend":
+					i.NginxServers = role.RoleDependHost
+				}
+			}
+			i.DolphinschedulerVersion = clusterInfo.Base.Version
+			i.DeployDir = clusterInfo.Base.DeployDir
+			i.AnsibleUser = clusterInfo.Base.DeployUser
+			i.WriteInventory()
+			// 开始ansible 部署
+			dev.DeployUpdate()
+			// 异步去修改集群的状态
+			go dev.DeployUpdateStatusChange(clusterInfo)
 		default:
 			c.Data["json"] = models.Response{Code: 200, Message: "请输入正确的参数"}
 			return

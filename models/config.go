@@ -100,18 +100,11 @@ func (m *ConfigZookeeper) ConfigToString() string { return "" }
 // TODO 后面再写
 
 // database配置
-type DatabaseType int
-
-const (
-	Mysql = iota
-	PostgreSQL
-)
-
 type ConfigDatabase struct {
-	DatabaseType DatabaseType `json:"databaseType"`
-	DbName       string       `json:"name"`
-	Account      string       `json:"account"`
-	Password     string       `json:"password"`
+	DatabaseType string `json:"databaseType"`
+	DatabaseName string `json:"databaseName"`
+	Account      string `json:"account"`
+	Password     string `json:"password"`
 }
 
 func (m *ConfigDatabase) ConfigToString() string {

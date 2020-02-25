@@ -48,7 +48,7 @@ func (c *HostController) CreateHost() {
 			}
 			// ansible刷新主机
 			ansible := models.DevopsInfo{ExecTime: now}
-			ansible.BackupLog()
+			ansible.BackupLog(models.DeployUpdate)
 			err = ansible.RefreshHost(req.Root)
 			if err != nil {
 				logs.Error("refresh host err: ", err)

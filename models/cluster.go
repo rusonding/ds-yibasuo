@@ -13,33 +13,25 @@ import (
 type BaseInfo struct {
 	Version    string `json:"version"`    // ds版本
 	DeployUser string `json:"deployUser"` //ds部署用户
-	DeployPath string `json:"deployPath"` //ds部署路径
+	DeployDir  string `json:"deployDir"`  //ds部署路径
 }
 
 // 角色信息
-// TODO 怎么样来支持这个接口类型
 type RoleInfo struct {
-	RoleName   string      `json:"name"`
-	RoleBody   interface{} `json:"roleBody"` // ConfigBody
-	DependHost string      `json:"dependHost"`
+	RoleName       string      `json:"roleName"`
+	RoleBody       interface{} `json:"roleBody"` // ConfigBody
+	RoleDependHost []string    `json:"roleDependHost"`
 }
-
-// 集群状态
-type ClusterType int
-
-const (
-	Stopped = iota //停止
-	Started        //启动
-)
 
 // 集群信息
 type ClusterInfo struct {
 	Id     string      `json:"id"`     // 集群id
 	Name   string      `json:"name"`   // 集群名称
-	Status ClusterType `json:"status"` // 当前状态
+	Status bool        `json:"status"` // 当前状态
 	Hosts  []string    `json:"hosts"`  // 主机信息
 	Base   *BaseInfo   `json:"base"`   // 基本信息
 	Roles  []*RoleInfo `json:"roles"`  // 角色信息
+	Remark string      `json:"remark"` // 备注
 }
 
 // model 层
