@@ -19,10 +19,9 @@ type BaseInfo struct {
 // 角色信息
 // TODO 怎么样来支持这个接口类型
 type RoleInfo struct {
-	RoleName string `json:"name"`
-	//RoleBody   ConfigBody `json:"roleBody"`
-	RoleBody   string `json:"roleBody"`
-	DependHost string `json:"dependHost"`
+	RoleName   string      `json:"name"`
+	RoleBody   interface{} `json:"roleBody"` // ConfigBody
+	DependHost string      `json:"dependHost"`
 }
 
 // 集群状态

@@ -1,21 +1,13 @@
 package controllers
 
 import (
-  "github.com/astaxie/beego"
+	"github.com/astaxie/beego"
 )
 
-
 type BaseController struct {
-  beego.Controller
+	beego.Controller
 }
 
 func (c *BaseController) Prepare() {
 
 }
-
-
-
-
-
-
-

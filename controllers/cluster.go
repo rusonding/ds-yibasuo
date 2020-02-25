@@ -45,12 +45,14 @@ func (c *ClusterController) CreateUpdateCluster() {
 		// 开始创建或修改
 		if err := req.CreateUpdateCluster(); err != nil {
 			c.Data["json"] = models.Response{Code: 500, Message: err.Error(), Result: nil}
+		} else {
+			c.Data["json"] = models.Response{Code: 200, Message: "ok", Result: nil}
 		}
 	} else {
+		logs.Error(err)
 		c.Data["json"] = models.Response{Code: 500, Message: "参数错误", Result: nil}
 	}
 
-	c.Data["json"] = models.Response{Code: 200, Message: "ok", Result: nil}
 	c.ServeJSON()
 }
 
