@@ -56,7 +56,7 @@ func (c *ClusterController) CreateUpdateCluster() {
 // controller层
 // 删除集群
 func (c *ClusterController) DeleteCluster() {
-	logs.Info("controller delete host")
+	logs.Info("controller delete cluster")
 	var req models.ClusterInfo
 
 	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &req); err == nil {
@@ -101,7 +101,7 @@ func (c *ClusterController) SelectClusterList() {
 	logs.Info("controller select cluster list")
 	page, err := strconv.Atoi(c.Input().Get("page"))
 	if err != nil {
-		c.Data["json"] = models.Response{Code: 500, Message: "查询错误", Result: nil}
+		c.Data["json"] = models.Response{Code: 500, Message: "参数错误", Result: nil}
 	} else {
 		res, err := models.SelectClusterList(page)
 		if err == nil {
@@ -121,11 +121,11 @@ func (c *ClusterController) SelectClusterList() {
 // 2 部署/升级
 func (c *ClusterController) ExecuteCluster() {
 	now := common.Now()
-	logs.Info("execute cluster, %s: \n", now, black.Byte2String(c.Ctx.Input.RequestBody))
+	logs.Info("controller execute cluster: \n", black.Byte2String(c.Ctx.Input.RequestBody))
 	var dev models.DevopsInfo
 	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &dev); err == nil {
 		dev.ExecTime = now
-		if singnal, err := dev.GetSignal(); err == nil { //TODO 隐患
+		if singnal, err := dev.GetSignal(); err == nil {
 			if singnal.Over == false {
 				c.Data["json"] = models.Response{Code: 500, Message: "上一次执行未结束，请等待！！！"}
 				c.ServeJSON()
@@ -183,16 +183,20 @@ func (c *ClusterController) ExecuteCluster() {
 			i.DeployDir = clusterInfo.Base.DeployDir
 			i.AnsibleUser = clusterInfo.Base.DeployUser
 			i.WriteInventory()
+			// TODO 写入yml配置信息
 			// 开始ansible 部署
 			dev.DeployUpdate()
 			// 异步去修改集群的状态
 			go dev.DeployUpdateStatusChange(clusterInfo)
 		default:
 			c.Data["json"] = models.Response{Code: 200, Message: "请输入正确的参数"}
+			c.ServeJSON()
 			return
 		}
 	} else {
-		c.Data["json"] = models.Response{Code: 200, Message: "请输入正确的参数"}
+		c.Data["json"] = models.Response{Code: 200, Message: "参数错误"}
+		c.ServeJSON()
+		return
 	}
 
 	c.Data["json"] = models.Response{Code: 200, Message: "ok", Result: nil}
@@ -204,22 +208,19 @@ func (c *ClusterController) ExecuteCluster() {
 // 上一次的动作可能是：执行、停止、部署/升级
 func (c *ClusterController) ReadLog() {
 	now := common.Now()
-	logs.Info("read log, %s: \n", now, black.Byte2String(c.Ctx.Input.RequestBody))
-	ansible := models.DevopsInfo{ExecTime: now}
-
+	logs.Info("controller read log: \n", now, black.Byte2String(c.Ctx.Input.RequestBody))
+	dev := models.DevopsInfo{ExecTime: now}
 	// 分页读日志，一页10条
 	page, _ := strconv.Atoi(c.Input().Get("page"))
-	log, err := ansible.ReadLog((page*10)-9, page*10)
+	log, err := dev.ReadLog((page*10)-9, page*10)
 	if err != nil {
 		logs.Error(err)
 	}
-
 	// 获得日志总行数
-	rows, err := ansible.GetLogRows()
+	rows, err := dev.GetLogRows()
 	if err != nil {
 		logs.Error(err)
 	}
-
 	// 组装响应
 	res := models.DevopsLogResult{
 		CurrentPage: page,
@@ -238,9 +239,9 @@ func (c *ClusterController) ReadLog() {
 // 前端需要每隔一段时间来调用该接口来判断执行是否结束
 func (c *ClusterController) ExecuteResultSignal() {
 	now := common.Now()
-	logs.Info("get singal, %s: \n", now, black.Byte2String(c.Ctx.Input.RequestBody))
-	ansible := models.DevopsInfo{ExecTime: now}
-	singnal, err := ansible.GetSignal()
+	logs.Info("controller get signal: \n", black.Byte2String(c.Ctx.Input.RequestBody))
+	dev := models.DevopsInfo{ExecTime: now}
+	singnal, err := dev.GetSignal()
 	if err != nil {
 		logs.Error(err)
 	}

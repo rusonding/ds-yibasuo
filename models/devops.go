@@ -72,7 +72,6 @@ func (m *DevopsInfo) DeployUpdateStatusChange(cluster *ClusterInfo) {
 
 func (m *DevopsInfo) ReadLog(start, end int) ([]string, error) {
 	filePath := "./devops/log/ansible.log"
-	//filePath := "C:\\iceblue\\go\\src\\ds-yibasuo\\test\\ansible.log"
 	var result []string
 
 	file, err := os.OpenFile(filePath, os.O_RDWR, 0666)
@@ -180,7 +179,7 @@ func (m *DevopsInfo) RefreshHost(pwd string) error {
 	cmd.Dir = "./devops"
 	out, err := cmd.Output()
 	if strings.Contains(black.Byte2String(out), "Permission denied") {
-		return errors.New("当前版本仅支持所有服务器root密码一致！！")
+		return errors.New("当前版本仅支持所有服务器root密码一致！！或者密码错误！！")
 	}
 	if err != nil {
 		return err

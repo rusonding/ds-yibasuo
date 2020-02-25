@@ -47,9 +47,9 @@ func (c *HostController) CreateHost() {
 				return
 			}
 			// ansible刷新主机
-			ansible := models.DevopsInfo{ExecTime: now}
-			ansible.BackupLog(models.DeployUpdate)
-			err = ansible.RefreshHost(req.Root)
+			dev := models.DevopsInfo{ExecTime: now}
+			dev.BackupLog(models.DeployUpdate)
+			err = dev.RefreshHost(req.Root)
 			if err != nil {
 				logs.Error("refresh host err: ", err)
 				c.Data["json"] = models.Response{Code: 500, Message: err.Error(), Result: nil}
@@ -58,6 +58,7 @@ func (c *HostController) CreateHost() {
 			}
 		} else {
 			logs.Info(err)
+			c.Data["json"] = models.Response{Code: 500, Message: fmt.Sprintf("创建错误: %s", err), Result: nil}
 		}
 	} else {
 		c.Data["json"] = models.Response{Code: 500, Message: "参数错误", Result: nil}
