@@ -83,7 +83,7 @@ func SelectHostList(page int) (*HostInfoResult, error) {
 		fuck = append(fuck, &h)
 	}
 
-	fucks := sliding(fuck, 10)
+	fucks := slidingHost(fuck, 10)
 
 	var fuckOff []*HostInfo
 	if len(fucks) <= page {
@@ -101,7 +101,7 @@ func SelectHostList(page int) (*HostInfoResult, error) {
 	return result, nil
 }
 
-func sliding(list []*HostInfo, step int) (res [][]*HostInfo) {
+func slidingHost(list []*HostInfo, step int) (res [][]*HostInfo) {
 	start, end := 0, 0
 	for {
 		if len(list) <= 0 {

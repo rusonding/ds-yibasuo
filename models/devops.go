@@ -14,7 +14,7 @@ import (
 )
 
 const (
-	ANSIBLE_LOG = "./devops/log/ansible.log"
+	ANSIBLE_LOG = "./devops/log/ansible"
 )
 
 type DevopsInfo struct {
@@ -24,8 +24,11 @@ type DevopsInfo struct {
 }
 
 func (m *DevopsInfo) BackupLog() {
+	logs.Info("clean log 3 days ago")
+	exec.Command("/bin/bash", "-c", `find ./devops/log -type f -name "ansible.*.log" -mtime +3 -exec rm -f {} \;`).Run()
+
 	logs.Info("ansible backup log ")
-	cmd := exec.Command("/bin/bash", "-c", fmt.Sprintf("mv %s %s.%s", ANSIBLE_LOG, ANSIBLE_LOG, m.ExecTime))
+	cmd := exec.Command("/bin/bash", "-c", fmt.Sprintf("mv %s.log %s.log", ANSIBLE_LOG, ANSIBLE_LOG+"."+m.ExecTime))
 	cmd.Start()
 }
 

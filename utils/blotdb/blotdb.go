@@ -13,7 +13,7 @@ var (
 )
 
 func BlotInit() {
-	Db, _ = NewBoltManager(DbUrl, []string{"host"})
+	Db, _ = NewBoltManager(DbUrl, []string{"host", "cluster", "config"})
 }
 
 //BlotDB的管理类

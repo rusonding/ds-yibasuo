@@ -6,6 +6,10 @@ import (
 )
 
 func init() {
+	//主页
+	//beego.Router("/", &controllers.IndexController{})
+	//beego.Router("/*", &controllers.IndexController{}) //支持vue的路由
+
 	// 登录
 	beego.Router("/api/v1/login", &controllers.LoginController{}, "post:Login")
 	//beego.Router("/api/v1/logout", &controllers.LoginController{}, "get:Logout")
@@ -13,6 +17,10 @@ func init() {
 	// 首页
 
 	// 集群管理
+	beego.Router("/api/v1/createUpdateCluster", &controllers.ClusterController{}, "POST:CreateUpdateCluster")
+	beego.Router("/api/v1/deleteCluster", &controllers.ClusterController{}, "POST:DeleteCluster")
+	beego.Router("/api/v1/selectCluster", &controllers.ClusterController{}, "POST:SelectCluster")
+	beego.Router("/api/v1/selectClusterList", &controllers.ClusterController{}, "GET:SelectClusterList")
 	beego.Router("/api/v1/executeCluster", &controllers.ClusterController{}, "POST:ExecuteCluster")
 	beego.Router("/api/v1/readLog", &controllers.ClusterController{}, "get:ReadLog")
 	beego.Router("/api/v1/executeResultSignal", &controllers.ClusterController{}, "get:ExecuteResultSignal")
