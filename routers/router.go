@@ -11,7 +11,7 @@ func init() {
 	//beego.Router("/*", &controllers.IndexController{}) //支持vue的路由
 
 	// 登录
-	beego.Router("/api/v1/login", &controllers.LoginController{}, "post:Login")
+	beego.Router("/api/v1/login", &controllers.LoginController{}, "POST:Login")
 	//beego.Router("/api/v1/logout", &controllers.LoginController{}, "get:Logout")
 
 	// 首页

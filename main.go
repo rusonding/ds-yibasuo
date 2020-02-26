@@ -1,6 +1,7 @@
 package main
 
 import (
+	"ds-yibasuo/models"
 	_ "ds-yibasuo/routers"
 	"ds-yibasuo/utils/blotdb"
 	"github.com/astaxie/beego"
@@ -17,6 +18,7 @@ func main() {
 
 	// 初始化
 	blotdb.BlotInit()
+	models.UserInit()
 
 	// 启动
 	logs.Info("The ds-yibasuo web v1.0.0")

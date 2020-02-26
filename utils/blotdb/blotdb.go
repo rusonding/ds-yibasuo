@@ -2,6 +2,7 @@ package blotdb
 
 import (
 	"bytes"
+	"github.com/astaxie/beego/logs"
 	"github.com/boltdb/bolt"
 	"log"
 )
@@ -13,7 +14,8 @@ var (
 )
 
 func BlotInit() {
-	Db, _ = NewBoltManager(DbUrl, []string{"host", "cluster", "config"})
+	logs.Info("Init blotdb")
+	Db, _ = NewBoltManager(DbUrl, []string{"host", "cluster", "config", "user", "devops"})
 }
 
 //BlotDB的管理类

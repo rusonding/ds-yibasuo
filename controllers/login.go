@@ -1,25 +1,32 @@
 package controllers
 
 import (
-  . "ds-yibasuo/models"
-  "encoding/json"
-  "github.com/astaxie/beego"
+	"ds-yibasuo/models"
+	"ds-yibasuo/utils/black"
+	"encoding/json"
+	"fmt"
+	"github.com/astaxie/beego"
+	"github.com/astaxie/beego/logs"
 )
 
 type LoginController struct {
-  beego.Controller
+	beego.Controller
 }
 
 func (c *LoginController) Login() {
-  var user User
+	logs.Info("controller login: \n", black.Byte2String(c.Ctx.Input.RequestBody))
+	var user models.User
 
-  if err := json.Unmarshal(c.Ctx.Input.RequestBody, &user); err != nil {
-    c.Data["json"] = Response{Code: 500, Message: "参数错误", Result: nil}
-    c.ServeJSON()
-    return
-  } else {
-    c.Data["json"] = Response{Code: 200, Message: user.Password, Result: nil}
-    c.ServeJSON()
-    return
-  }
+	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &user); err == nil {
+		ok, err := user.UserCheck(user.Password)
+		if ok {
+			c.Data["json"] = models.Response{Code: 200, Message: "ok", Result: nil}
+		} else {
+			c.Data["json"] = models.Response{Code: 500, Message: fmt.Sprintf("登陆错误：%s", err), Result: nil}
+		}
+	} else {
+		c.Data["json"] = models.Response{Code: 500, Message: "参数错误", Result: nil}
+	}
+
+	c.ServeJSON()
 }
