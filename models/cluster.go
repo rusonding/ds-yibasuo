@@ -95,7 +95,7 @@ func SelectClusterList(page int) (*ClusterInfoResult, error) {
 	if len(fucks) <= page {
 		fuckOff = fucks[len(fucks)-1]
 	} else {
-		fuckOff = fucks[page]
+		fuckOff = fucks[page-1]
 	}
 
 	result := &ClusterInfoResult{

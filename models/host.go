@@ -89,7 +89,7 @@ func SelectHostList(page int) (*HostInfoResult, error) {
 	if len(fucks) <= page {
 		fuckOff = fucks[len(fucks)-1]
 	} else {
-		fuckOff = fucks[page]
+		fuckOff = fucks[page-1]
 	}
 
 	result := &HostInfoResult{

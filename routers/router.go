@@ -26,6 +26,10 @@ func init() {
 	beego.Router("/api/v1/executeResultSignal", &controllers.ClusterController{}, "get:ExecuteResultSignal")
 
 	// 配置管理
+	beego.Router("/api/v1/createUpdateConfig", &controllers.ConfigController{}, "POST:CreateUpdateConfig")
+	beego.Router("/api/v1/deleteConfig", &controllers.ConfigController{}, "POST:DeleteConfig")
+	beego.Router("/api/v1/selectConfig", &controllers.ConfigController{}, "POST:SelectConfig")
+	beego.Router("/api/v1/selectConfigList", &controllers.ConfigController{}, "GET:SelectConfigList")
 
 	// 主机管理
 	beego.Router("/api/v1/createHost", &controllers.HostController{}, "post:CreateHost")

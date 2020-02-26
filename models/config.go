@@ -1,6 +1,18 @@
 package models
 
-import "fmt"
+import (
+	"ds-yibasuo/utils/black"
+	"ds-yibasuo/utils/blotdb"
+	"ds-yibasuo/utils/common"
+	"encoding/json"
+	"errors"
+	"fmt"
+	"github.com/astaxie/beego/logs"
+)
+
+var (
+	ConfigList = []string{"frontend", "backend", "alert", "master", "worker", "resources", "database"}
+)
 
 // 配置内容接口
 type ConfigBody interface{ ConfigToString() string }
@@ -42,7 +54,13 @@ const (
 type AlertBody interface{ AlertToString() string }
 
 type AlertMail struct {
-	// TODO 后面再写
+	MailSender   string `yaml:"mail.sender"`
+	MailUser     string `yaml:"mail.user"`
+	MailPasswd   string `yaml:"mail.passwd"`
+	MailSmtpHost string `yaml:"mail.server.host"`
+	MailSmtpPort string `yaml:"mail.server.port"`
+	MailSsl      bool   `yaml:"mail.smtp.ssl.enable"`
+	MailTls      bool   `yaml:"mail.smtp.starttls.enable"`
 }
 
 func (m *AlertMail) AlertToString() string {
@@ -50,6 +68,7 @@ func (m *AlertMail) AlertToString() string {
 }
 
 type AlertWeixin struct {
+	//TODO 后面在写
 }
 
 func (m *AlertWeixin) AlertToString() string {
@@ -90,6 +109,7 @@ type Workers struct {
 func (m *Workers) ConfigToString() string { return "" }
 
 // zookeeper配置
+// TODO 第一版不用配zk参数
 type ConfigZookeeper struct {
 	Zookeeper []string `json:"zookeeper"`
 }
@@ -126,8 +146,98 @@ const (
 )
 
 type ConfigInfo struct {
-	Id   int        `json:"id"`   // 配置id
-	Name string     `json:"name"` // 配置别名
-	Typ  ConfigType `json:"typ"`  // 配置类型
-	Conf ConfigBody `json:"conf"` // 配置内容
+	Id   string      `json:"id"`   // 配置id
+	Name string      `json:"name"` // 配置别名
+	Typ  string      `json:"typ"`  // 配置类型
+	Conf interface{} `json:"conf"` // 配置内容 //TODO interface 隐患
+}
+
+func (m *ConfigInfo) CreateUpdateConfig() error {
+	m.Id = common.MakeUuid(m.Name + m.Typ)
+	hostBody, _ := json.Marshal(m)
+	return blotdb.Db.Add("config", black.String2Byte(m.Id), hostBody)
+}
+
+func (m *ConfigInfo) DeleteConfig() error {
+	return blotdb.Db.RemoveID("config", black.String2Byte(m.Id))
+}
+
+func (m *ConfigInfo) SelectConfig() (*ConfigInfo, error) {
+	res, err := blotdb.Db.SelectVal("config", black.String2Byte(m.Id))
+	if err != nil {
+		return nil, err
+	}
+	if len(res) < 1 {
+		return nil, errors.New("没有查到！")
+	}
+
+	c := ConfigInfo{}
+	json.Unmarshal(black.String2Byte(res[0]), &c)
+	return &c, err
+}
+
+type ConfigInfoResult struct {
+	CurrentPage int           `json:"currentPage"`
+	Total       int           `json:"total"`
+	Data        []*ConfigInfo `json:"data"`
+}
+
+func SelectConfigList(page int, typ string) (*ConfigInfoResult, error) {
+	res, err := blotdb.Db.SelectValues("config")
+	if err != nil || len(res) < 1 {
+		return nil, errors.New("查询错误 或者 没有内容！")
+	}
+
+	var fuck []*ConfigInfo
+	for _, value := range res {
+		h := ConfigInfo{}
+		err := json.Unmarshal(value, &h)
+		if err != nil {
+			logs.Error(err)
+			return nil, err
+		}
+		if h.Typ == typ {
+			fuck = append(fuck, &h)
+		}
+	}
+	if len(fuck) == 0 {
+		return nil, errors.New("查询错误 或者 没有内容！")
+	}
+
+	fucks := slidingConfig(fuck, 10)
+
+	var fuckOff []*ConfigInfo
+	if len(fucks) <= page {
+		fuckOff = fucks[len(fucks)-1]
+	} else {
+		fuckOff = fucks[page-1]
+	}
+
+	result := &ConfigInfoResult{
+		CurrentPage: page,
+		Total:       len(fuck),
+		Data:        fuckOff,
+	}
+
+	return result, nil
+}
+
+func slidingConfig(list []*ConfigInfo, step int) (res [][]*ConfigInfo) {
+	start, end := 0, 0
+	for {
+		if len(list) <= 0 {
+			break
+		}
+		if (start + step) > len(list) {
+			end = len(list)
+		} else {
+			end += step
+		}
+		res = append(res, list[start:end])
+		start += step
+		if start > len(list) {
+			break
+		}
+	}
+	return
 }
