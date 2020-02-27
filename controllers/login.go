@@ -18,8 +18,7 @@ func (c *LoginController) Login() {
 	var user models.User
 
 	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &user); err == nil {
-		ok, err := user.UserCheck(user.Password)
-		if ok {
+		if ok, err := user.UserCheck(user.Password); ok {
 			c.Data["json"] = models.Response{Code: 200, Message: "ok", Result: nil}
 		} else {
 			c.Data["json"] = models.Response{Code: 500, Message: fmt.Sprintf("登陆错误：%s", err), Result: nil}

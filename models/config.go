@@ -11,7 +11,13 @@ import (
 )
 
 var (
-	ConfigList = []string{"frontend", "backend", "alert", "master", "worker", "resources", "database"}
+	ConfigList   = []string{"frontend", "backend", "alert", "master", "worker", "resources", "database"}
+	FrontendYml  = "./devops/conf/nginx.yml"
+	BackendYml   = "./devops/conf/api.yml"
+	AlertYml     = "./devops/conf/alert.yml"
+	MasterYml    = "./devops/conf/master.yml"
+	WorkerYml    = "./devops/conf/worker.yml"
+	ResourcesYml = ""
 )
 
 // 配置内容接口
@@ -152,7 +158,7 @@ type ConfigInfo struct {
 	Conf interface{} `json:"conf"` // 配置内容 //TODO interface 隐患
 }
 
-func (m *ConfigInfo) CreateUpdateConfig() error {
+func (m *ConfigInfo) CreateConfig() error {
 	m.Id = common.MakeUuid(m.Name + m.Typ)
 	hostBody, _ := json.Marshal(m)
 	return blotdb.Db.Add("config", black.String2Byte(m.Id), hostBody)
@@ -160,6 +166,11 @@ func (m *ConfigInfo) CreateUpdateConfig() error {
 
 func (m *ConfigInfo) DeleteConfig() error {
 	return blotdb.Db.RemoveID("config", black.String2Byte(m.Id))
+}
+
+func (m *ConfigInfo) UpdateConfig() error {
+	hostBody, _ := json.Marshal(m)
+	return blotdb.Db.Update("config", black.String2Byte(m.Id), hostBody)
 }
 
 func (m *ConfigInfo) SelectConfig() (*ConfigInfo, error) {

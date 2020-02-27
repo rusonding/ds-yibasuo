@@ -14,7 +14,7 @@ type ConfigController struct {
 	beego.Controller
 }
 
-func (c *ConfigController) CreateUpdateConfig() {
+func (c *ConfigController) CreateConfig() {
 	logs.Info("controller create config")
 	var req models.ConfigInfo
 	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &req); err == nil {
@@ -24,7 +24,7 @@ func (c *ConfigController) CreateUpdateConfig() {
 			c.ServeJSON()
 			return
 		}
-		if err := req.CreateUpdateConfig(); err == nil {
+		if err := req.CreateConfig(); err == nil {
 			c.Data["json"] = models.Response{Code: 200, Message: "ok", Result: nil}
 		} else {
 			c.Data["json"] = models.Response{Code: 500, Message: fmt.Sprintf("插入错误：%s", err), Result: nil}
@@ -45,6 +45,29 @@ func (c *ConfigController) DeleteConfig() {
 		if err != nil {
 			logs.Error(err)
 			c.Data["json"] = models.Response{Code: 500, Message: fmt.Sprintf("删除发生错误！%s", err), Result: nil}
+		} else {
+			c.Data["json"] = models.Response{Code: 200, Message: "ok", Result: nil}
+		}
+	} else {
+		c.Data["json"] = models.Response{Code: 500, Message: "参数错误", Result: nil}
+	}
+
+	c.ServeJSON()
+}
+
+func (c *ConfigController) UpdateConfig() {
+	logs.Info("controller update config")
+	var req models.ConfigInfo
+
+	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &req); err == nil {
+		if req.Id == "" {
+			c.Data["json"] = models.Response{Code: 500, Message: "参数错误", Result: nil}
+			c.ServeJSON()
+			return
+		}
+		if err := req.UpdateConfig(); err != nil {
+			logs.Error(err)
+			c.Data["json"] = models.Response{Code: 500, Message: fmt.Sprintf("修改发生错误！%s", err), Result: nil}
 		} else {
 			c.Data["json"] = models.Response{Code: 200, Message: "ok", Result: nil}
 		}

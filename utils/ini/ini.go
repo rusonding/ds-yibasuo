@@ -34,8 +34,8 @@ const (
 	PASSWORD_REGEX = "db_password.*"
 
 	HOSTS_REGEX      = "(?m)^\\[servers\\]([\\s\\S]+)^\\[all:vars\\]"
+	HOSTS_PASSWORD   = "'.*'"
 	HOSTS_USER_REGEX = "username.*"
-	HOSTS_SSH_PASS   = "ansible_ssh_pass.*"
 
 	UNWANTED_REGEX = "(?m)\\[.*\\]"
 	IP_REGEX       = "(?m)\\d{0,3}\\.\\d{0,3}\\.\\d{0,3}\\.\\d{0,3}"
@@ -191,7 +191,7 @@ db_password = %s
 }
 
 type IniHosts struct {
-	Servers        []string
+	Servers        []map[string]string
 	AnsibleUser    string
 	AnsibleSshPass string
 }
@@ -206,11 +206,18 @@ func (i *IniHosts) ReadHosts() error {
 
 	hosts := regexp.MustCompile(HOSTS_REGEX).FindString(dataStr)
 	user := regexp.MustCompile(HOSTS_USER_REGEX).FindString(dataStr)
-	ssh := regexp.MustCompile(HOSTS_SSH_PASS).FindString(dataStr)
 
-	i.Servers = parserList(hosts)
+	for _, h := range parserOriginList(hosts) {
+		ip := regexp.MustCompile(IP_REGEX).FindString(h)
+		pwd := regexp.MustCompile(HOSTS_PASSWORD).FindString(h)
+		if ip != "" {
+			hostFuck := make(map[string]string)
+			hostFuck["ip"] = ip
+			hostFuck["pwd"] = strings.Replace(pwd, "'", "", -1)
+			i.Servers = append(i.Servers, hostFuck)
+		}
+	}
 	i.AnsibleUser = parserString(user)
-	i.AnsibleSshPass = parserString(ssh)
 
 	return nil
 }
@@ -220,18 +227,27 @@ func (i *IniHosts) WriteHosts() error {
 	data := ""
 	data += "[servers]\n"
 	for _, v := range i.Servers {
-		data += v + "\n"
+		if v["ip"] != "" {
+			data += fmt.Sprintf("%s ansible_ssh_user=root ansible_ssh_pass='%s'", v["ip"], v["pwd"]) + "\n"
+		}
 	}
 	data += "\n"
 	data += "[all:vars]\n"
 	data += "username = " + i.AnsibleUser + "\n"
-	data += "ansible_ssh_pass = " + i.AnsibleSshPass + "\n"
 
 	err := ioutil.WriteFile(pathHosts, black.String2Byte(data), 0755)
 	if err != nil {
 		return err
 	}
 	return nil
+}
+
+func parserOriginList(in string) (out []string) {
+	unwantedRegex, _ := regexp.Compile(UNWANTED_REGEX)
+	filterHeadLast := black.Byte2String(unwantedRegex.ReplaceAll([]byte(in), []byte("")))
+	filterSpace := strings.TrimSpace(filterHeadLast)
+	split := strings.Split(filterSpace, "\n")
+	return split
 }
 
 // 解析ini 数组私有方法

@@ -58,7 +58,7 @@ func (m *DevopsInfo) DeployUpdateStatusChange(cluster *ClusterInfo) {
 		if ansibleCount == 0 {
 			// ansible 进程为0 证明结束了
 			cluster.Status = true
-			err := cluster.CreateUpdateCluster()
+			err := cluster.UpdateCluster()
 			if err != nil {
 				logs.Error("status change err: ", err)
 			}
@@ -130,10 +130,13 @@ type DevopsLogResult struct {
 
 type SignalResult struct {
 	SingnalType string `json:"singnalType"`
+	Success     bool   `json:"success"`
 	Over        bool   `json:"over"`
 }
 
+// TODO 隐患
 func (m *DevopsInfo) GetSignal() (*SignalResult, error) {
+	// 获取信号相关的数据
 	out, err := exec.Command("/bin/bash", "-c", fmt.Sprintf(`head -1 %s.log`, ANSIBLE_LOG)).Output()
 	if err != nil {
 		return nil, err
@@ -147,14 +150,31 @@ func (m *DevopsInfo) GetSignal() (*SignalResult, error) {
 	if err != nil {
 		return nil, err
 	}
-	if ansibleCount == 0 {
+	fuckSuccess, err := exec.Command("/bin/bash", "-c", fmt.Sprintf(`grep -E "failed=[1-9]" %s.log | wc -l`, ANSIBLE_LOG)).Output()
+	if err != nil {
+		return nil, err
+	}
+	fuckSuccessCount, err := strconv.Atoi(strings.Replace(black.Byte2String(fuckSuccess), "\n", "", -1))
+	if err != nil {
+		return nil, err
+	}
+	// 判断数据
+	if ansibleCount == 0 && fuckSuccessCount == 0 {
 		return &SignalResult{
 			SingnalType: strings.Replace(black.Byte2String(out), "\n", "", -1),
+			Success:     true,
+			Over:        true,
+		}, nil
+	} else if ansibleCount == 0 && fuckSuccessCount != 0 {
+		return &SignalResult{
+			SingnalType: strings.Replace(black.Byte2String(out), "\n", "", -1),
+			Success:     false,
 			Over:        true,
 		}, nil
 	} else {
 		return &SignalResult{
 			SingnalType: strings.Replace(black.Byte2String(out), "\n", "", -1),
+			Success:     false,
 			Over:        false,
 		}, nil
 	}
@@ -179,7 +199,7 @@ func (m *DevopsInfo) RefreshHost(pwd string) error {
 	cmd.Dir = "./devops"
 	out, err := cmd.Output()
 	if strings.Contains(black.Byte2String(out), "Permission denied") {
-		return errors.New("当前版本仅支持所有服务器root密码一致！！或者密码错误！！")
+		return errors.New("密码错误！！")
 	}
 	if err != nil {
 		return err

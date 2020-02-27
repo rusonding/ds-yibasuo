@@ -26,31 +26,21 @@ func (c *HostController) CreateHost() {
 
 	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &req); err == nil {
 		if err := req.CreateHost(); err == nil {
-			// ansible读host.ini配置
-			hosts := ini.IniHosts{}
-			err := hosts.ReadHosts()
-			if err != nil {
-				logs.Error(err)
-				return
-			}
 			// ansible刷新host.ini配置
-			// TODO 可能有不成功的隐患
-			for _, value := range hosts.Servers {
-				if value != req.Ip {
-					hosts.Servers = append(hosts.Servers, req.Ip)
-				}
-			}
+			hosts := ini.IniHosts{}
+			hostFuck := make(map[string]string)
+			hostFuck["ip"] = req.Ip
+			hostFuck["pwd"] = req.Root
+			hosts.Servers = append(hosts.Servers, hostFuck)
 			hosts.AnsibleSshPass = req.Root
-			err = hosts.WriteHosts()
-			if err != nil {
-				logs.Error(err)
-				return
+			hosts.AnsibleUser = "easy" //TODO 暂时写死
+			if err = hosts.WriteHosts(); err != nil {
+				logs.Error("host ini write err: ", err)
 			}
 			// ansible刷新主机
 			dev := models.DevopsInfo{ExecTime: now}
 			dev.BackupLog(models.DeployUpdate)
-			err = dev.RefreshHost(req.Root)
-			if err != nil {
+			if err = dev.RefreshHost(req.Root); err != nil {
 				logs.Error("refresh host err: ", err)
 				c.Data["json"] = models.Response{Code: 500, Message: err.Error(), Result: nil}
 			} else {
@@ -95,8 +85,12 @@ func (c *HostController) UpdateHost() {
 	var req models.HostInfo
 
 	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &req); err == nil {
-		err := req.UpdateHost()
-		if err != nil {
+		if req.Id == "" {
+			c.Data["json"] = models.Response{Code: 500, Message: "参数错误", Result: nil}
+			c.ServeJSON()
+			return
+		}
+		if err := req.UpdateHost(); err != nil {
 			logs.Error(err)
 			c.Data["json"] = models.Response{Code: 500, Message: fmt.Sprintf("修改发生错误！%s", err), Result: nil}
 		} else {

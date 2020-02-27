@@ -36,7 +36,7 @@ type ClusterInfo struct {
 
 // model 层
 // 创建或更新集群
-func (m *ClusterInfo) CreateUpdateCluster() error {
+func (m *ClusterInfo) CreateCluster() error {
 	m.Id = common.MakeUuid(m.Name)
 	hostBody, _ := json.Marshal(m)
 	return blotdb.Db.Add("cluster", black.String2Byte(m.Id), hostBody)
@@ -46,6 +46,13 @@ func (m *ClusterInfo) CreateUpdateCluster() error {
 // 删除集群
 func (m *ClusterInfo) DeleteCluster() error {
 	return blotdb.Db.RemoveID("cluster", black.String2Byte(m.Id))
+}
+
+// model 层
+// 修改集群
+func (m *ClusterInfo) UpdateCluster() error {
+	hostBody, _ := json.Marshal(m)
+	return blotdb.Db.Update("cluster", black.String2Byte(m.Id), hostBody)
 }
 
 // model 层

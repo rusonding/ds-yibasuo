@@ -17,8 +17,9 @@ func init() {
 	// 首页
 
 	// 集群管理
-	beego.Router("/api/v1/createUpdateCluster", &controllers.ClusterController{}, "POST:CreateUpdateCluster")
+	beego.Router("/api/v1/createCluster", &controllers.ClusterController{}, "POST:CreateCluster")
 	beego.Router("/api/v1/deleteCluster", &controllers.ClusterController{}, "POST:DeleteCluster")
+	beego.Router("/api/v1/updateCluster", &controllers.ClusterController{}, "POST:UpdateCluster")
 	beego.Router("/api/v1/selectCluster", &controllers.ClusterController{}, "POST:SelectCluster")
 	beego.Router("/api/v1/selectClusterList", &controllers.ClusterController{}, "GET:SelectClusterList")
 	beego.Router("/api/v1/executeCluster", &controllers.ClusterController{}, "POST:ExecuteCluster")
@@ -26,8 +27,9 @@ func init() {
 	beego.Router("/api/v1/executeResultSignal", &controllers.ClusterController{}, "get:ExecuteResultSignal")
 
 	// 配置管理
-	beego.Router("/api/v1/createUpdateConfig", &controllers.ConfigController{}, "POST:CreateUpdateConfig")
+	beego.Router("/api/v1/createConfig", &controllers.ConfigController{}, "POST:CreateConfig")
 	beego.Router("/api/v1/deleteConfig", &controllers.ConfigController{}, "POST:DeleteConfig")
+	beego.Router("/api/v1/updateConfig", &controllers.ConfigController{}, "POST:UpdateConfig")
 	beego.Router("/api/v1/selectConfig", &controllers.ConfigController{}, "POST:SelectConfig")
 	beego.Router("/api/v1/selectConfigList", &controllers.ConfigController{}, "GET:SelectConfigList")
 

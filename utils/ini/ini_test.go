@@ -1,6 +1,7 @@
 package ini
 
 import (
+	"fmt"
 	"testing"
 )
 
@@ -40,6 +41,7 @@ func TestIniHosts_ReadHosts(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
+	fmt.Println(i.Servers)
 	if len(i.Servers) == 0 {
 		t.Errorf("read ini error")
 	}
@@ -52,14 +54,17 @@ func TestIniHosts_WriteHosts(t *testing.T) {
 		t.Error(err)
 	}
 
-	i.Servers = []string{"192.167.8.141"}
+	a := make(map[string]string)
+	a["ip"] = "1.1.1.1"
+	a["pwd"] = "hello"
+	i.Servers = []map[string]string{a}
 
 	err = i.WriteHosts()
 	if err != nil {
 		t.Error(err)
 	}
 
-	if i.Servers[0] != "192.167.8.141" {
+	if i.Servers[0]["ip"] == "1.1.1.1" && i.Servers[0]["pwd"] == "hello" {
 		t.Errorf("write ini error")
 	}
 }

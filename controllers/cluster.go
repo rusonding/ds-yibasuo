@@ -5,6 +5,7 @@ import (
 	"ds-yibasuo/utils/black"
 	"ds-yibasuo/utils/common"
 	"ds-yibasuo/utils/ini"
+	"ds-yibasuo/utils/yml"
 	"encoding/json"
 	"fmt"
 	"github.com/astaxie/beego"
@@ -19,8 +20,7 @@ type ClusterController struct {
 
 // controller层
 // 创建 或 修改集群
-// 集群一创建了，只有名字不能更改，其他的可以更改
-func (c *ClusterController) CreateUpdateCluster() {
+func (c *ClusterController) CreateCluster() {
 	logs.Info("controller create update cluster")
 	var req models.ClusterInfo
 
@@ -40,7 +40,7 @@ func (c *ClusterController) CreateUpdateCluster() {
 		}
 		// TODO 集群信息请求体的基本验证
 		// 开始创建或修改
-		if err := req.CreateUpdateCluster(); err != nil {
+		if err := req.CreateCluster(); err != nil {
 			c.Data["json"] = models.Response{Code: 500, Message: err.Error(), Result: nil}
 		} else {
 			c.Data["json"] = models.Response{Code: 200, Message: "ok", Result: nil}
@@ -64,6 +64,31 @@ func (c *ClusterController) DeleteCluster() {
 		if err != nil {
 			logs.Error(err)
 			c.Data["json"] = models.Response{Code: 500, Message: fmt.Sprintf("删除发生错误！%s", err), Result: nil}
+		} else {
+			c.Data["json"] = models.Response{Code: 200, Message: "ok", Result: nil}
+		}
+	} else {
+		c.Data["json"] = models.Response{Code: 500, Message: "参数错误", Result: nil}
+	}
+
+	c.ServeJSON()
+}
+
+// controller层
+// 修改集群
+func (c *ClusterController) UpdateCluster() {
+	logs.Info("controller update cluster")
+	var req models.ClusterInfo
+
+	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &req); err == nil {
+		if req.Id == "" {
+			c.Data["json"] = models.Response{Code: 500, Message: "参数错误", Result: nil}
+			c.ServeJSON()
+			return
+		}
+		if err := req.UpdateCluster(); err != nil {
+			logs.Error(err)
+			c.Data["json"] = models.Response{Code: 500, Message: fmt.Sprintf("修改发生错误！%s", err), Result: nil}
 		} else {
 			c.Data["json"] = models.Response{Code: 200, Message: "ok", Result: nil}
 		}
@@ -119,6 +144,7 @@ func (c *ClusterController) SelectClusterList() {
 // 0 停止
 // 1 启动
 // 2 部署/升级
+// TODO 代码太多 隐患
 func (c *ClusterController) ExecuteCluster() {
 	now := common.Now()
 	logs.Info("controller execute cluster: \n", black.Byte2String(c.Ctx.Input.RequestBody))
@@ -169,12 +195,37 @@ func (c *ClusterController) ExecuteCluster() {
 				case "zookeeper":
 					i.ZookeeperServers = role.RoleDependHost
 				case "master":
+					var m models.ConfigMaster
+					if err := mapstructure.Decode(role.RoleBody.(map[string]interface{}), &m); err != nil {
+						logs.Error("master map to struct err: ", err)
+					}
+					err = yml.WriteYml(models.MasterYml, &m)
+					if err != nil {
+						logs.Error("master yml err: ", err)
+					}
 					i.MasterServers = role.RoleDependHost
 				case "worker":
+					var m models.ConfigWorker
+					if err := mapstructure.Decode(role.RoleBody.(map[string]interface{}), &m); err != nil {
+						logs.Error("worker map to struct err: ", err)
+					}
+					err = yml.WriteYml(models.WorkerYml, &m)
+					if err != nil {
+						logs.Error("worker yml err: ", err)
+					}
 					i.WorkerServers = role.RoleDependHost
 				case "backend":
+					var b models.ConfigBackend
+					if err := mapstructure.Decode(role.RoleBody.(map[string]interface{}), &b); err != nil {
+						logs.Error("backend map to struct err: ", err)
+					}
+					err := yml.WriteYml(models.BackendYml, &b)
+					if err != nil {
+						logs.Error("api yml err: ", err)
+					}
 					i.ApiServers = role.RoleDependHost
 					i.AlertServers = role.RoleDependHost
+					//TODO alert ==
 				case "frontend":
 					i.NginxServers = role.RoleDependHost
 				}
