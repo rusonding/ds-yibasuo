@@ -63,6 +63,10 @@ func WriteYml(path string, conf models.ConfigBody) error {
 		data, _ = yaml.Marshal(&n)
 	case *models.ConfigWorker:
 		data, _ = yaml.Marshal(&n)
+	case *models.ConfigHadoop:
+		data, _ = yaml.Marshal(&n)
+	case *models.ConfigCommon:
+		data, _ = yaml.Marshal(&n)
 	default:
 		return errors.New("yaml marshal err or no fuck type.")
 	}

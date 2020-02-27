@@ -25,13 +25,14 @@ type RoleInfo struct {
 
 // 集群信息
 type ClusterInfo struct {
-	Id     string      `json:"id"`     // 集群id
-	Name   string      `json:"name"`   // 集群名称
-	Status bool        `json:"status"` // 当前状态
-	Hosts  []string    `json:"hosts"`  // 主机信息
-	Base   *BaseInfo   `json:"base"`   // 基本信息
-	Roles  []*RoleInfo `json:"roles"`  // 角色信息
-	Remark string      `json:"remark"` // 备注
+	Id           string      `json:"id"`           // 集群id
+	Name         string      `json:"name"`         // 集群名称
+	WorkStatus   bool        `json:"workStatus"`   // 工作状态,是否启动
+	DeployStatus bool        `json:"deployStatus"` // 安装状态,是否安装
+	Hosts        []string    `json:"hosts"`        // 主机信息
+	Base         *BaseInfo   `json:"base"`         // 基本信息
+	Roles        []*RoleInfo `json:"roles"`        // 角色信息
+	Remark       string      `json:"remark"`       // 备注
 }
 
 // model 层

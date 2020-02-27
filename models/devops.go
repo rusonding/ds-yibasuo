@@ -49,7 +49,7 @@ func (m *DevopsInfo) DeployUpdate() {
 }
 
 // 这样的异步操作，显得易懂又新手。
-func (m *DevopsInfo) DeployUpdateStatusChange(cluster *ClusterInfo) {
+func (m *DevopsInfo) UpdateStatus(status ExecuteType, cluster *ClusterInfo) {
 	for {
 		cmd := exec.Command("/bin/bash", "-c", "ps -ef | grep ansible-playbook | grep -v grep | wc -l")
 		bytes, _ := cmd.Output()
@@ -57,9 +57,15 @@ func (m *DevopsInfo) DeployUpdateStatusChange(cluster *ClusterInfo) {
 
 		if ansibleCount == 0 {
 			// ansible 进程为0 证明结束了
-			cluster.Status = true
-			err := cluster.UpdateCluster()
-			if err != nil {
+			switch status {
+			case Start:
+				cluster.WorkStatus = true
+			case Stop:
+				cluster.WorkStatus = false
+			case DeployUpdate:
+				cluster.DeployStatus = true
+			}
+			if err := cluster.UpdateCluster(); err != nil {
 				logs.Error("status change err: ", err)
 			}
 			break

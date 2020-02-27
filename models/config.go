@@ -11,13 +11,14 @@ import (
 )
 
 var (
-	ConfigList   = []string{"frontend", "backend", "alert", "master", "worker", "resources", "database"}
-	FrontendYml  = "./devops/conf/nginx.yml"
-	BackendYml   = "./devops/conf/api.yml"
-	AlertYml     = "./devops/conf/alert.yml"
-	MasterYml    = "./devops/conf/master.yml"
-	WorkerYml    = "./devops/conf/worker.yml"
-	ResourcesYml = ""
+	ConfigList  = []string{"frontend", "backend", "alert", "master", "worker", "resources", "database", "zookeeper"}
+	FrontendYml = "./devops/conf/nginx.yml"
+	BackendYml  = "./devops/conf/api.yml"
+	AlertYml    = "./devops/conf/alert.yml"
+	MasterYml   = "./devops/conf/master.yml"
+	WorkerYml   = "./devops/conf/worker.yml"
+	HadoopYml   = "./devops/conf/hadoop.yml"
+	CommonYml   = "./devops/conf/common.yml"
 )
 
 // 配置内容接口
@@ -50,21 +51,23 @@ type Backends struct {
 func (m *Backends) ConfigToString() string { return "" }
 
 // 报警配置
-type AlertType int
-
-const (
-	Mail = iota
-	Weixin
-)
+//type AlertType int
+//
+//const (
+//	Mail = iota
+//	Weixin
+//)
 
 type AlertBody interface{ AlertToString() string }
 
 type AlertMail struct {
+	AlertType    string `yaml:"alert.type"`
+	MailProtocol string `yaml:"mail.protocol"`
 	MailSender   string `yaml:"mail.sender"`
 	MailUser     string `yaml:"mail.user"`
 	MailPasswd   string `yaml:"mail.passwd"`
 	MailSmtpHost string `yaml:"mail.server.host"`
-	MailSmtpPort string `yaml:"mail.server.port"`
+	MailSmtpPort int    `yaml:"mail.server.port"`
 	MailSsl      bool   `yaml:"mail.smtp.ssl.enable"`
 	MailTls      bool   `yaml:"mail.smtp.starttls.enable"`
 }
@@ -81,9 +84,10 @@ func (m *AlertWeixin) AlertToString() string {
 	return fmt.Sprintf(`AlertWeixin:{}`)
 }
 
+//序列化的时候为什么不认识这个类型呢AlertBody
+//错误 * 'Alert' expected type 'models.AlertBody', got 'map[string]interface {}'
 type ConfigAlert struct {
-	AlertType AlertType `json:"alertType"`
-	Alert     AlertBody `json:"alert"`
+	Alert interface{} `yaml:"alert"`
 }
 
 func (m *ConfigAlert) ConfigToString() string { return "" }
@@ -123,7 +127,29 @@ type ConfigZookeeper struct {
 func (m *ConfigZookeeper) ConfigToString() string { return "" }
 
 // 资源中心配置
-// TODO 后面再写
+type Hadoops struct {
+	FsDefaultFS string `yaml:"fs.defaultFS"`
+}
+
+func (m *Hadoops) ConfigToString() string { return "" }
+
+type ConfigHadoop struct {
+	Hadoop Hadoops `yaml:"hadoop"`
+}
+
+func (m *ConfigHadoop) ConfigToString() string { return "" }
+
+type Commons struct {
+	DataStore2hdfsBasepath string `yaml:"data.store2hdfs.basepath"`
+}
+
+func (m *Commons) ConfigToString() string { return "" }
+
+type ConfigCommon struct {
+	Common Commons `yaml:"common"`
+}
+
+func (m *ConfigCommon) ConfigToString() string { return "" }
 
 // database配置
 type ConfigDatabase struct {

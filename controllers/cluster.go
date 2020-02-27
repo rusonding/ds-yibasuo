@@ -158,25 +158,28 @@ func (c *ClusterController) ExecuteCluster() {
 				return
 			}
 		}
+
+		// 读取集群信息
+		cluster := models.ClusterInfo{}
+		cluster.Id = dev.ClusterId
+		clusterInfo, err := cluster.SelectCluster()
+		if err != nil {
+			logs.Error(err)
+			c.Data["json"] = models.Response{Code: 500, Message: "查询主机出错", Result: nil}
+			c.ServeJSON()
+			return
+		}
 		switch dev.ExecuteType {
 		case models.Start:
 			dev.BackupLog(models.Start)
 			dev.Start()
+			go dev.UpdateStatus(models.Start, clusterInfo)
 		case models.Stop:
 			dev.BackupLog(models.Stop)
 			dev.Stop()
+			go dev.UpdateStatus(models.Stop, clusterInfo)
 		case models.DeployUpdate:
 			dev.BackupLog(models.DeployUpdate)
-			// 读取集群信息
-			cluster := models.ClusterInfo{}
-			cluster.Id = dev.ClusterId
-			clusterInfo, err := cluster.SelectCluster()
-			if err != nil {
-				logs.Error(err)
-				c.Data["json"] = models.Response{Code: 500, Message: "查询主机出错", Result: nil}
-				c.ServeJSON()
-				return
-			}
 			// 写入ini配置信息
 			i := ini.IniInventory{}
 			i.Servers = clusterInfo.Hosts
@@ -224,10 +227,40 @@ func (c *ClusterController) ExecuteCluster() {
 						logs.Error("api yml err: ", err)
 					}
 					i.ApiServers = role.RoleDependHost
+				case "alert":
+					var a models.ConfigAlert
+					if err := mapstructure.Decode(role.RoleBody.(map[string]interface{}), &a); err != nil {
+						logs.Error("alert map to struct err: ", err)
+					}
+					if err := yml.WriteYml(models.AlertYml, &a); err != nil {
+						logs.Error("alert yml err: ", err)
+					}
 					i.AlertServers = role.RoleDependHost
-					//TODO alert ==
 				case "frontend":
+					var f models.ConfigFrontend
+					if err := mapstructure.Decode(role.RoleBody.(map[string]interface{}), &f); err != nil {
+						logs.Error("frontend map to struct err: ", err)
+					}
+					if err := yml.WriteYml(models.FrontendYml, &f); err != nil {
+						logs.Error("frontend yml err: ", err)
+					}
 					i.NginxServers = role.RoleDependHost
+				case "hadoop":
+					var h models.ConfigHadoop
+					if err := mapstructure.Decode(role.RoleBody.(map[string]interface{}), &h); err != nil {
+						logs.Error("hadoop map to struct err: ", err)
+					}
+					if err := yml.WriteYml(models.HadoopYml, &h); err != nil {
+						logs.Error("hadoop yml err: ", err)
+					}
+				case "common":
+					var c models.ConfigCommon
+					if err := mapstructure.Decode(role.RoleBody.(map[string]interface{}), &c); err != nil {
+						logs.Error("common map to struct err: ", err)
+					}
+					if err := yml.WriteYml(models.CommonYml, &c); err != nil {
+						logs.Error("common yml err: ", err)
+					}
 				}
 			}
 			i.DolphinschedulerVersion = clusterInfo.Base.Version
@@ -238,7 +271,7 @@ func (c *ClusterController) ExecuteCluster() {
 			// 开始ansible 部署
 			dev.DeployUpdate()
 			// 异步去修改集群的状态
-			go dev.DeployUpdateStatusChange(clusterInfo)
+			go dev.UpdateStatus(models.DeployUpdate, clusterInfo)
 		default:
 			c.Data["json"] = models.Response{Code: 200, Message: "请输入正确的参数"}
 			c.ServeJSON()
