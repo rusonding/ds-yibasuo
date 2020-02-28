@@ -80,6 +80,7 @@ type ClusterInfoResult struct {
 	Data        []*ClusterInfo `json:"data"`
 }
 
+// page 传入 -1  代表不分页,查询所有
 func SelectClusterList(page int) (*ClusterInfoResult, error) {
 	res, err := blotdb.Db.SelectValues("cluster")
 	if err != nil || len(res) < 1 {
@@ -97,19 +98,27 @@ func SelectClusterList(page int) (*ClusterInfoResult, error) {
 		fuck = append(fuck, &h)
 	}
 
-	fucks := slidingCluster(fuck, 10)
-
-	var fuckOff []*ClusterInfo
-	if len(fucks) <= page {
-		fuckOff = fucks[len(fucks)-1]
+	var result *ClusterInfoResult
+	if page == -1 {
+		result = &ClusterInfoResult{
+			CurrentPage: page,
+			Total:       len(fuck),
+			Data:        fuck,
+		}
 	} else {
-		fuckOff = fucks[page-1]
-	}
+		fucks := slidingCluster(fuck, 10)
+		var fuckOff []*ClusterInfo
+		if len(fucks) <= page {
+			fuckOff = fucks[len(fucks)-1]
+		} else {
+			fuckOff = fucks[page-1]
+		}
 
-	result := &ClusterInfoResult{
-		CurrentPage: page,
-		Total:       len(fuck),
-		Data:        fuckOff,
+		result = &ClusterInfoResult{
+			CurrentPage: page,
+			Total:       len(fuck),
+			Data:        fuckOff,
+		}
 	}
 
 	return result, nil

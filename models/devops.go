@@ -140,7 +140,7 @@ type SignalResult struct {
 	Over        bool   `json:"over"`
 }
 
-// TODO 隐患
+// TODO 很多重复逻辑 隐患
 func (m *DevopsInfo) GetSignal() (*SignalResult, error) {
 	// 获取信号相关的数据
 	out, err := exec.Command("/bin/bash", "-c", fmt.Sprintf(`head -1 %s.log`, ANSIBLE_LOG)).Output()

@@ -42,7 +42,16 @@ func ReadYml(path string, conf models.ConfigType) (models.ConfigBody, error) {
 		if err := yaml.Unmarshal(data, &config); err == nil {
 			return &config, nil
 		}
-	case models.Resources: // TODO 后面再写
+	case models.Hadoop:
+		config := models.ConfigHadoop{}
+		if err := yaml.Unmarshal(data, &config); err == nil {
+			return &config, nil
+		}
+	case models.Common:
+		config := models.ConfigCommon{}
+		if err := yaml.Unmarshal(data, &config); err == nil {
+			return &config, nil
+		}
 	default:
 		return nil, errors.New("yaml unmarshal err or no fuck type.")
 	}

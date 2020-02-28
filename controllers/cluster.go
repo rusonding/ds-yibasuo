@@ -151,8 +151,25 @@ func (c *ClusterController) ExecuteCluster() {
 	var dev models.DevopsInfo
 	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &dev); err == nil {
 		dev.ExecTime = now
+		// 检查上一次执行是否成功结束
 		if singnal, err := dev.GetSignal(); err == nil {
 			if singnal.Over == false {
+				c.Data["json"] = models.Response{Code: 500, Message: "上一次执行未结束，请等待！！！"}
+				c.ServeJSON()
+				return
+			}
+		}
+		// 查询是否有已经启动的集群
+		// TODO 这样的跳出方式,我有点无奈
+		if res, err := models.SelectClusterList(-1); err == nil {
+			work := false
+			for _, value := range res.Data {
+				if value.WorkStatus == true {
+					work = true
+					break
+				}
+			}
+			if work {
 				c.Data["json"] = models.Response{Code: 500, Message: "上一次执行未结束，请等待！！！"}
 				c.ServeJSON()
 				return
@@ -267,7 +284,6 @@ func (c *ClusterController) ExecuteCluster() {
 			i.DeployDir = clusterInfo.Base.DeployDir
 			i.AnsibleUser = clusterInfo.Base.DeployUser
 			i.WriteInventory()
-			// TODO 写入yml配置信息
 			// 开始ansible 部署
 			dev.DeployUpdate()
 			// 异步去修改集群的状态

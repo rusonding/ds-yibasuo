@@ -173,8 +173,9 @@ const (
 	Master
 	Worker
 	Zookeeper
-	Resources
 	Database
+	Hadoop
+	Common
 )
 
 type ConfigInfo struct {

@@ -33,7 +33,7 @@ func (c *HostController) CreateHost() {
 			hostFuck["pwd"] = req.Root
 			hosts.Servers = append(hosts.Servers, hostFuck)
 			hosts.AnsibleSshPass = req.Root
-			hosts.AnsibleUser = "easy" //TODO 暂时写死
+			hosts.AnsibleUser = "easy" //TODO 暂时写死 用户只能叫easy
 			if err = hosts.WriteHosts(); err != nil {
 				logs.Error("host ini write err: ", err)
 			}
