@@ -129,6 +129,7 @@ func (m *ConfigZookeeper) ConfigToString() string { return "" }
 // 资源中心配置
 type Hadoops struct {
 	FsDefaultFS string `yaml:"fs.defaultFS"`
+	//TODO 其他字段后面写
 }
 
 func (m *Hadoops) ConfigToString() string { return "" }
@@ -141,6 +142,7 @@ func (m *ConfigHadoop) ConfigToString() string { return "" }
 
 type Commons struct {
 	DataStore2hdfsBasepath string `yaml:"data.store2hdfs.basepath"`
+	//TODO 其他字段后面写
 }
 
 func (m *Commons) ConfigToString() string { return "" }
@@ -186,7 +188,7 @@ type ConfigInfo struct {
 }
 
 func (m *ConfigInfo) CreateConfig() error {
-	m.Id = common.MakeUuid(m.Name + m.Typ)
+	m.Id = common.MakeUuid(m.Name + m.Typ + common.Now())
 	hostBody, _ := json.Marshal(m)
 	return blotdb.Db.Add("config", black.String2Byte(m.Id), hostBody)
 }

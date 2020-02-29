@@ -13,7 +13,7 @@ type HostInfo struct {
 	Id     string `json:"id"`
 	Ip     string `json:"ip"`
 	Name   string `json:"name"`
-	Port   string `json:"port"`
+	Port   int    `json:"port"`
 	Root   string `json:"root"`
 	Remark string `json:"remark"`
 }
@@ -21,7 +21,7 @@ type HostInfo struct {
 // model层
 // 创建主机
 func (m *HostInfo) CreateHost() error {
-	m.Id = common.MakeUuid(m.Name + m.Ip)
+	m.Id = common.MakeUuid(m.Name + m.Ip + common.Now())
 	hostBody, _ := json.Marshal(m)
 	return blotdb.Db.Add("host", black.String2Byte(m.Id), hostBody)
 }

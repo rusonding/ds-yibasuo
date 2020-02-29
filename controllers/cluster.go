@@ -19,7 +19,7 @@ type ClusterController struct {
 }
 
 // controller层
-// 创建 或 修改集群
+// 创建集群
 func (c *ClusterController) CreateCluster() {
 	logs.Info("controller create update cluster")
 	var req models.ClusterInfo

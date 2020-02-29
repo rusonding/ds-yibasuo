@@ -38,7 +38,7 @@ type ClusterInfo struct {
 // model 层
 // 创建或更新集群
 func (m *ClusterInfo) CreateCluster() error {
-	m.Id = common.MakeUuid(m.Name)
+	m.Id = common.MakeUuid(m.Name + common.Now())
 	hostBody, _ := json.Marshal(m)
 	return blotdb.Db.Add("cluster", black.String2Byte(m.Id), hostBody)
 }

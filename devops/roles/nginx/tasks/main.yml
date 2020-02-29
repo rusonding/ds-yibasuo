@@ -2,8 +2,10 @@
 
 - name: exists nginx
   shell: "source ~/.bash_profile && source /etc/profile && nginx -V"
+  ignore_errors: True
   register: nginx_pkg
 
 - include_tasks: nginx.yml
   when:
-    - '"command not found" in nginx_pkg.stdout'
+    - nginx_pkg | failed
+#    - '"command not found" in nginx_pkg.stderr'
