@@ -228,7 +228,7 @@ func (i *IniHosts) WriteHosts() error {
 	data += "[servers]\n"
 	for _, v := range i.Servers {
 		if v["ip"] != "" {
-			data += fmt.Sprintf("%s ansible_ssh_user=root ansible_ssh_pass='%s'", v["ip"], v["pwd"]) + "\n"
+			data += fmt.Sprintf("%s ansible_ssh_user=root ansible_port=%s ansible_ssh_pass='%s'", v["ip"], v["port"], v["pwd"]) + "\n"
 		}
 	}
 	data += "\n"

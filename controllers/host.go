@@ -99,6 +99,7 @@ func (c *HostController) UpdateHost() {
 		hostFuck := make(map[string]string)
 		hostFuck["ip"] = req.Ip
 		hostFuck["pwd"] = req.Root
+		hostFuck["port"] = strconv.Itoa(req.Port)
 		hosts.Servers = append(hosts.Servers, hostFuck)
 		hosts.AnsibleSshPass = req.Root
 		hosts.AnsibleUser = "easy" //TODO 暂时写死 用户只能叫easy
