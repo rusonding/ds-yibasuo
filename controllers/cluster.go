@@ -161,7 +161,7 @@ func (c *ClusterController) ExecuteCluster() {
 		}
 		// 查询是否有已经启动的集群
 		// TODO 这样的跳出方式,我有点无奈
-		if res, err := models.SelectClusterList(-1); err == nil {
+		if res, err := models.SelectClusterList(-1); err == nil && dev.ExecuteType != models.Stop {
 			work := false
 			for _, value := range res.Data {
 				if value.WorkStatus == true {
@@ -170,7 +170,7 @@ func (c *ClusterController) ExecuteCluster() {
 				}
 			}
 			if work {
-				c.Data["json"] = models.Response{Code: 500, Message: "上一次执行未结束，请等待！！！"}
+				c.Data["json"] = models.Response{Code: 500, Message: "请关闭已经启动的集群,再操作其他集群!!"}
 				c.ServeJSON()
 				return
 			}

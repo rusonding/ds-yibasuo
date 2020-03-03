@@ -15,6 +15,7 @@ func init() {
 	//beego.Router("/api/v1/logout", &controllers.LoginController{}, "get:Logout")
 
 	// 首页
+	beego.Router("/api/v1/currentState", &controllers.IndexController{}, "GET:CurrentState")
 
 	// 集群管理
 	beego.Router("/api/v1/createCluster", &controllers.ClusterController{}, "POST:CreateCluster")
