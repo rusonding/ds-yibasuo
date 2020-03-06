@@ -1,5 +1,12 @@
 ---
 
+- name: zookeeper delete related folders
+  file: name={{ item }} state=absent
+  with_items:
+    - "{{ zookeeper_dir }}"
+    - "{{ zookeeper_data }}"
+    - "{{ zookeeper_log }}"
+
 - name: zookeeper create related folders
   file: name={{ item }} state=directory mode=755
   with_items:

@@ -25,6 +25,15 @@ func (c *ClusterController) CreateCluster() {
 	var req models.ClusterInfo
 
 	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &req); err == nil {
+		// 判断重名
+		if ok, err := req.CheckName(); err == nil {
+			if ok {
+				c.Data["json"] = models.Response{Code: 500, Message: "名称冲突", Result: nil}
+				c.ServeJSON()
+				return
+			}
+		}
+
 		// 基本判断
 		for _, value := range req.Hosts {
 			if value == "" {
@@ -40,6 +49,7 @@ func (c *ClusterController) CreateCluster() {
 		}
 		// TODO 集群信息请求体的基本验证
 		// 开始创建或修改
+		req.Status = "prepare"
 		if err := req.CreateCluster(); err != nil {
 			c.Data["json"] = models.Response{Code: 500, Message: err.Error(), Result: nil}
 		} else {
@@ -76,11 +86,21 @@ func (c *ClusterController) DeleteCluster() {
 
 // controller层
 // 修改集群
+// 取消状态是从修改集群中传进来的
 func (c *ClusterController) UpdateCluster() {
 	logs.Info("controller update cluster")
 	var req models.ClusterInfo
 
 	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &req); err == nil {
+		// 判断重名
+		if ok, err := req.CheckName(); err == nil {
+			if ok {
+				c.Data["json"] = models.Response{Code: 500, Message: "名称冲突", Result: nil}
+				c.ServeJSON()
+				return
+			}
+		}
+
 		if req.Id == "" {
 			c.Data["json"] = models.Response{Code: 500, Message: "参数错误", Result: nil}
 			c.ServeJSON()
@@ -162,17 +182,12 @@ func (c *ClusterController) ExecuteCluster() {
 		// 查询是否有已经启动的集群
 		// TODO 这样的跳出方式,我有点无奈
 		if res, err := models.SelectClusterList(-1); err == nil && dev.ExecuteType != models.Stop {
-			work := false
 			for _, value := range res.Data {
-				if value.WorkStatus == true {
-					work = true
-					break
+				if value.Status == "startsuccess" {
+					c.Data["json"] = models.Response{Code: 500, Message: "同一时间只能启动一个集群,请停止再操作其他集群!!"}
+					c.ServeJSON()
+					return
 				}
-			}
-			if work {
-				c.Data["json"] = models.Response{Code: 500, Message: "请关闭已经启动的集群,再操作其他集群!!"}
-				c.ServeJSON()
-				return
 			}
 		}
 

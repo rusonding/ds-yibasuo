@@ -26,11 +26,21 @@ func (c *HostController) CreateHost() {
 	var req models.HostInfo
 
 	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &req); err == nil {
+		// 判断重名
+		if ok, err := req.CheckName(); err == nil {
+			if ok {
+				c.Data["json"] = models.Response{Code: 500, Message: "名称冲突", Result: nil}
+				c.ServeJSON()
+				return
+			}
+		}
+
 		// ansible刷新host.ini配置
 		hosts := ini.IniHosts{}
 		hostFuck := make(map[string]string)
 		hostFuck["ip"] = req.Ip
 		hostFuck["pwd"] = req.Root
+		hostFuck["port"] = strconv.Itoa(req.Port)
 		hosts.Servers = append(hosts.Servers, hostFuck)
 		hosts.AnsibleSshPass = req.Root
 		hosts.AnsibleUser = "easy" //TODO 暂时写死 用户只能叫easy
@@ -89,6 +99,15 @@ func (c *HostController) UpdateHost() {
 	var req models.HostInfo
 
 	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &req); err == nil {
+		// 判断重名
+		if ok, err := req.CheckName(); err == nil {
+			if ok {
+				c.Data["json"] = models.Response{Code: 500, Message: "名称冲突", Result: nil}
+				c.ServeJSON()
+				return
+			}
+		}
+
 		if req.Id == "" {
 			c.Data["json"] = models.Response{Code: 500, Message: "参数错误", Result: nil}
 			c.ServeJSON()

@@ -6,9 +6,20 @@ import (
 	"ds-yibasuo/utils/blotdb"
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/logs"
+	"github.com/astaxie/beego/plugins/cors"
 )
 
 func main() {
+	// 跨域cors
+	beego.InsertFilter("*", beego.BeforeRouter, cors.Allow(&cors.Options{
+		//AllowAllOrigins:  true,
+		AllowMethods:     []string{"*"},
+		AllowHeaders:     []string{"Origin", "Authorization", "Access-Control-Allow-Origin", "content-type"},
+		ExposeHeaders:    []string{"Content-Length", "Access-Control-Allow-Origin"},
+		AllowCredentials: true,
+		AllowOrigins:     []string{"http://10.*.*.*:*", "http://localhost:*", "http://127.0.0.1:*"},
+	}))
+
 	//日志
 	//err := beego.SetLogger("file", `{"filename":"/Users/finup/logs/dig-gene2.log"}`)
 	//if err != nil {

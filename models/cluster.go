@@ -19,20 +19,26 @@ type BaseInfo struct {
 // 角色信息
 type RoleInfo struct {
 	RoleName       string      `json:"roleName"`
-	RoleBody       interface{} `json:"roleBody"` // ConfigBody
+	RoleBody       interface{} `json:"roleBody"` // ConfigInfoPuppet
 	RoleDependHost []string    `json:"roleDependHost"`
 }
 
 // 集群信息
+// 启动成功 startsuccess
+// 启动失败 startfailure
+// 停止成功 stopsuccess
+// 停止失败 stopfailure
+// 部署成功 deploysuccess
+// 部署失败 deployfailure
+// 准备     prepare
 type ClusterInfo struct {
-	Id           string      `json:"id"`           // 集群id
-	Name         string      `json:"name"`         // 集群名称
-	WorkStatus   bool        `json:"workStatus"`   // 工作状态,是否启动
-	DeployStatus bool        `json:"deployStatus"` // 安装状态,是否安装
-	Hosts        []string    `json:"hosts"`        // 主机信息
-	Base         *BaseInfo   `json:"base"`         // 基本信息
-	Roles        []*RoleInfo `json:"roles"`        // 角色信息
-	Remark       string      `json:"remark"`       // 备注
+	Id     string      `json:"id"`     // 集群id
+	Name   string      `json:"name"`   // 集群名称
+	Status string      `json:"status"` // 集群状态
+	Hosts  []string    `json:"hosts"`  // 主机信息
+	Base   *BaseInfo   `json:"base"`   // 基本信息
+	Roles  []*RoleInfo `json:"roles"`  // 角色信息
+	Remark string      `json:"remark"` // 备注
 }
 
 // model 层
@@ -78,6 +84,27 @@ type ClusterInfoResult struct {
 	CurrentPage int            `json:"currentPage"`
 	Total       int            `json:"total"`
 	Data        []*ClusterInfo `json:"data"`
+}
+
+// 判断重名
+func (m *ClusterInfo) CheckName() (bool, error) {
+	res, err := blotdb.Db.SelectValues("cluster")
+	if err != nil || len(res) < 1 {
+		return false, errors.New("查询错误 或者 没有内容！")
+	}
+
+	for _, value := range res {
+		h := ClusterInfo{}
+		if err := json.Unmarshal(value, &h); err != nil {
+			logs.Error(err)
+			return false, err
+		}
+		if h.Name == m.Name {
+			return true, nil
+		}
+	}
+
+	return false, nil
 }
 
 // page 传入 -1  代表不分页,查询所有
@@ -152,18 +179,3 @@ const (
 	Start
 	DeployUpdate
 )
-
-// 执行结果
-type ExecuteResultType int
-
-const (
-	Success = iota
-	Failed
-)
-
-// 执行请求
-type ExecuteInfo struct {
-	ExecuteType   ExecuteType       `json:"executeType"`
-	ClusterId     int               `json:"clusterId"`
-	ExecuteResult ExecuteResultType `json:"executeResult"`
-}

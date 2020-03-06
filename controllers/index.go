@@ -24,7 +24,7 @@ func (c *IndexController) CurrentState() {
 		return
 	}
 	for _, value := range res.Data {
-		if value.WorkStatus {
+		if value.Status == "startsuccess" {
 			c.Data["json"] = models.Response{Code: 200, Message: "ok", Result: value}
 			c.ServeJSON()
 			return

@@ -57,6 +57,27 @@ func (m *HostInfo) SelectHost() (*HostInfo, error) {
 	return &h, err
 }
 
+func (m *HostInfo) CheckName() (bool, error) {
+	res, err := blotdb.Db.SelectValues("host")
+	if err != nil || len(res) < 1 {
+		return false, errors.New("查询错误 或者 没有内容！")
+	}
+
+	for _, value := range res {
+		h := HostInfo{}
+		if err := json.Unmarshal(value, &h); err != nil {
+			logs.Error(err)
+			return false, err
+		} else {
+			if h.Name == m.Name {
+				return true, nil
+			}
+		}
+	}
+
+	return false, nil
+}
+
 // model层
 // 查询host列表
 // 得到map结果，再序列化成string返回

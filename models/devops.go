@@ -44,26 +44,43 @@ func (m *DevopsInfo) BackupLog(typ ExecuteType) {
 
 func (m *DevopsInfo) DeployUpdate() {
 	cmd := exec.Command("ansible-playbook", "deploy.yml")
+	//cmd := exec.Command("ansible-playbook", "deploy.yml", "-t", "dancer,music,show")
 	cmd.Dir = "./devops"
 	cmd.Start()
 }
 
 // 这样的异步操作，显得易懂又新手。
-func (m *DevopsInfo) UpdateStatus(status ExecuteType, cluster *ClusterInfo) {
+func (m *DevopsInfo) UpdateStatus(exe ExecuteType, cluster *ClusterInfo) {
 	for {
-		cmd := exec.Command("/bin/bash", "-c", "ps -ef | grep ansible-playbook | grep -v grep | wc -l")
-		bytes, _ := cmd.Output()
-		ansibleCount, _ := strconv.Atoi(strings.Replace(black.Byte2String(bytes), "\n", "", -1))
+		// 检查ansible是否执行结束
+		ansible, _ := exec.Command("/bin/bash", "-c", "ps -ef | grep ansible-playbook | grep -v grep | wc -l").Output()
+		ansibleCount, _ := strconv.Atoi(strings.Replace(black.Byte2String(ansible), "\n", "", -1))
+
+		// 检查执行中是否出现了错误
+		failed, _ := exec.Command("/bin/bash", "-c", fmt.Sprintf(`grep -E "failed=[1-9]" %s.log | wc -l`, ANSIBLE_LOG)).Output()
+		failedCount, _ := strconv.Atoi(strings.Replace(black.Byte2String(failed), "\n", "", -1))
 
 		if ansibleCount == 0 {
 			// ansible 进程为0 证明结束了
-			switch status {
+			switch exe {
 			case Start:
-				cluster.WorkStatus = true
+				if failedCount == 0 {
+					cluster.Status = "startsuccess"
+				} else {
+					cluster.Status = "startfailure"
+				}
 			case Stop:
-				cluster.WorkStatus = false
+				if failedCount == 0 {
+					cluster.Status = "stopsuccess"
+				} else {
+					cluster.Status = "stopfailure"
+				}
 			case DeployUpdate:
-				cluster.DeployStatus = true
+				if failedCount == 0 {
+					cluster.Status = "deploysuccess"
+				} else {
+					cluster.Status = "deployfailure"
+				}
 			}
 			if err := cluster.UpdateCluster(); err != nil {
 				logs.Error("status change err: ", err)
