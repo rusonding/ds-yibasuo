@@ -70,7 +70,7 @@ func (m *ClusterInfo) SelectCluster() (*ClusterInfo, error) {
 		return nil, err
 	}
 	if len(res) < 1 {
-		return nil, errors.New("没有查到！")
+		return nil, errors.New("null")
 	}
 
 	c := ClusterInfo{}
@@ -110,8 +110,11 @@ func (m *ClusterInfo) CheckName() (bool, error) {
 // page 传入 -1  代表不分页,查询所有
 func SelectClusterList(page int) (*ClusterInfoResult, error) {
 	res, err := blotdb.Db.SelectValues("cluster")
-	if err != nil || len(res) < 1 {
-		return nil, errors.New("查询错误 或者 没有内容！")
+	if err != nil {
+		return nil, err
+	}
+	if len(res) < 1 {
+		return nil, errors.New("null")
 	}
 
 	var fuck []*ClusterInfo

@@ -49,7 +49,7 @@ func (m *HostInfo) SelectHost() (*HostInfo, error) {
 		return nil, err
 	}
 	if len(res) < 1 {
-		return nil, errors.New("没有查到！")
+		return nil, errors.New("null")
 	}
 
 	h := HostInfo{}
@@ -89,8 +89,11 @@ type HostInfoResult struct {
 
 func SelectHostList(page int) (*HostInfoResult, error) {
 	res, err := blotdb.Db.SelectValues("host")
-	if err != nil || len(res) < 1 {
-		return nil, errors.New("查询错误 或者 没有内容！")
+	if err != nil {
+		return nil, err
+	}
+	if len(res) == 0 {
+		return nil, errors.New("null")
 	}
 
 	var fuck []*HostInfo

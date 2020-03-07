@@ -190,7 +190,7 @@ type ConfigInfoPuppet struct {
 	DatabaseName           string  `json:"databaseName,omitempty"`
 	Account                string  `json:"account,omitempty"`
 	Password               string  `json:"password,omitempty"`
-	Remark                 string  `json:"remark,omitempty"`
+	Remark                 string  `json:"remark"`
 }
 
 // 配置信息
@@ -237,7 +237,7 @@ func (m *ConfigInfo) SelectConfig() (*ConfigInfoPuppet, error) {
 		return nil, err
 	}
 	if len(res) < 1 {
-		return nil, errors.New("没有查到！")
+		return nil, errors.New("null")
 	}
 
 	var object json.RawMessage
@@ -338,8 +338,11 @@ type ConfigInfoResult struct {
 
 func SelectConfigList(page int, typ string) (*ConfigInfoResult, error) {
 	res, err := blotdb.Db.SelectValues("config")
-	if err != nil || len(res) < 1 {
-		return nil, errors.New("查询错误 或者 没有内容！")
+	if err != nil {
+		return nil, err
+	}
+	if len(res) < 1 {
+		return nil, errors.New("null")
 	}
 
 	var fuck []*ConfigInfoPuppet
@@ -469,8 +472,11 @@ type AllConfig struct {
 
 func SelectAllConfig() (*AllConfig, error) {
 	res, err := blotdb.Db.SelectValues("config")
-	if err != nil || len(res) < 1 {
-		return nil, errors.New("查询错误 或者 没有内容！")
+	if err != nil {
+		return nil, err
+	}
+	if len(res) < 1 {
+		return nil, errors.New("null")
 	}
 
 	all := &AllConfig{}

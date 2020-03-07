@@ -177,11 +177,12 @@ func (c *ConfigController) SelectConfig() {
 
 	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &req); err == nil {
 		res, err := req.SelectConfig()
-		if err != nil {
-			logs.Error(err)
-			c.Data["json"] = models.Response{Code: 500, Message: fmt.Sprintf("查询发生错误！%s", err), Result: nil}
-		} else {
+		if err == nil {
 			c.Data["json"] = models.Response{Code: 200, Message: "ok", Result: res}
+		} else if err.Error() == "null" {
+			c.Data["json"] = models.Response{Code: 200, Message: "没有查到", Result: nil}
+		} else {
+			c.Data["json"] = models.Response{Code: 500, Message: fmt.Sprintf("查询发生错误！%s", err), Result: nil}
 		}
 	} else {
 		c.Data["json"] = models.Response{Code: 500, Message: "参数错误", Result: nil}
@@ -200,6 +201,10 @@ func (c *ConfigController) SelectConfigList() {
 		all, err := models.SelectAllConfig()
 		if err == nil {
 			c.Data["json"] = models.Response{Code: 200, Message: "ok", Result: all}
+			c.ServeJSON()
+			return
+		} else if err.Error() == "null" {
+			c.Data["json"] = models.Response{Code: 200, Message: "没有查到", Result: nil}
 			c.ServeJSON()
 			return
 		} else {
@@ -221,6 +226,8 @@ func (c *ConfigController) SelectConfigList() {
 		res, err := models.SelectConfigList(page, typ)
 		if err == nil {
 			c.Data["json"] = models.Response{Code: 200, Message: "ok", Result: res}
+		} else if err.Error() == "null" {
+			c.Data["json"] = models.Response{Code: 200, Message: "没有查到", Result: nil}
 		} else {
 			c.Data["json"] = models.Response{Code: 500, Message: fmt.Sprintf("查询发生错误！%s", err), Result: nil}
 		}
